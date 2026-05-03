@@ -2,119 +2,132 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Pinnacle Global School ERP</title>
-    <!-- Use logo.png as favicon -->
-    <link rel="icon" type="image/jpg" href="logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinnacle Global School - ERP Portal</title>
+    <!-- Styles omitted for brevity, keep your existing CSS here -->
     <style>
-        :root { --primary: #003366; --accent: #f39c12; }
-        body { font-family: sans-serif; margin: 0; background: #f0f2f5; }
-        nav { background: var(--primary); padding: 15px; display: flex; align-items: center; color: white; }
-        nav img { height: 60px; margin-right: 20px; }
-        .menu-btn { background: none; border: 1px solid white; color: white; padding: 8px 15px; cursor: pointer; margin-right: 10px; }
-        .container { padding: 20px; max-width: 1000px; margin: auto; }
-        .card { background: white; padding: 25px; border-radius: 10px; shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        input, select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
-        .submit-btn { background: var(--accent); color: white; border: none; width: 100%; padding: 15px; font-weight: bold; cursor: pointer; }
+        /* Keep all your original CSS here */
+        :root { --navy: #1a3a8f; --gold: #b45309; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f8fafc; }
+        /* ... (Include your full CSS block from the original file) ... */
     </style>
 </head>
 <body>
 
-<nav>
-    <img src="logo.png" alt="Pinnacle Logo">
-    <h2>Pinnacle Global School Portal</h2>
-    <div style="margin-left:auto">
-        <button class="menu-btn" onclick="show('dash')">Dashboard</button>
-        <button class="menu-btn" onclick="show('entry')">Data Entry</button>
-        <button class="menu-btn" onclick="show('edit')">Edit Data</button>
+<div class="app-container">
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">PGS</div>
+      <p class="sidebar-school-name">Tradition | Innovation | Excellence</p>
     </div>
-</nav>
+    <div class="nav-section">
+      <div class="nav-section-label">Main Menu</div>
+      <div class="nav-item active" onclick="showPage('dashboard',this)">Dashboard</div>
+      <div class="nav-item" onclick="showPage('entry',this)">Student Data Entry</div>
+      <div class="nav-item" onclick="showPage('edit',this)">Edit Student Records</div>
+    </div>
+  </nav>
 
-<div class="container">
-    <div id="entry" class="section">
-        <div class="card">
-            <h3>Student Registration</h3>
-            <form id="regForm">
-                <input type="text" name="regFormNum" placeholder="Registration Form Number" required>
-                <input type="text" name="studentName" placeholder="Student Name" required>
-                <input type="text" name="motherName" placeholder="Mother Name">
-                <input type="text" name="fatherName" placeholder="Father Name">
-                <select name="address" id="addrDrop"><option>Loading addresses...</option></select>
-                <select name="caste">
-                    <option>General</option><option>OBC</option><option>SC</option><option>ST</option>
-                </select>
-                <select name="gender">
-                    <option>Male</option><option>Female</option><option>Other</option>
-                </select>
-                <input type="text" name="dob" placeholder="Date of Birth (DD/MM/YYYY)">
-                <input type="text" name="aadhaar" placeholder="Aadhaar Number">
-                <input type="text" name="prevSchool" placeholder="Previous School">
-                <input type="text" name="phone" placeholder="Phone Number">
-                <input type="text" name="dateAdmission" placeholder="Date of Admission (DD/MM/YYYY)">
-                <select name="classAdmission">
-                    <option>Nursery</option><option>LKG</option><option>UKG</option>
-                    <option>1st</option><option>2nd</option><option>3rd</option>
-                    <option>4th</option><option>5th</option><option>6th</option>
-                    <option>7th</option><option>8th</option><option>9th</option>
-                    <option>10th</option><option>11th</option><option>12th</option>
-                </select>
-                <input type="number" name="regFee" placeholder="Registration Fee Amount Paid">
-                <button type="button" class="submit-btn" onclick="submitData()">SUBMIT TO GOOGLE SHEETS</button>
-            </form>
+  <main class="main">
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page active">
+      <!-- Your existing Dashboard HTML -->
+    </div>
+
+    <!-- STUDENT ENTRY -->
+    <div id="page-entry" class="page">
+      <div class="page-header">
+        <h2>New Student Admission</h2>
+      </div>
+      <div class="admission-banner" id="admBanner">
+        <div id="admNumber"></div>
+      </div>
+      <div class="card">
+        <div class="form-grid">
+            <div class="form-group"><label>Reg Form No <span class="req">*</span></label><input type="text" id="f_regNo"></div>
+            <div class="form-group"><label>Student Name <span class="req">*</span></label><input type="text" id="f_name"></div>
+            <div class="form-group"><label>Mother Name <span class="req">*</span></label><input type="text" id="f_mother"></div>
+            <div class="form-group"><label>Father Name <span class="req">*</span></label><input type="text" id="f_father"></div>
+            <div class="form-group"><label>Address <span class="req">*</span></label><select id="f_address"></select></div>
+            <div class="form-group"><label>Caste <span class="req">*</span></label><select id="f_caste"><option>General</option><option>OBC</option><option>SC</option><option>ST</option></select></div>
+            <div class="form-group"><label>Gender <span class="req">*</span></label><select id="f_gender"><option>Male</option><option>Female</option></select></div>
+            <div class="form-group"><label>DOB <span class="req">*</span></label><input type="text" id="f_dob" placeholder="DD/MM/YYYY"></div>
+            <div class="form-group"><label>Aadhaar</label><input type="text" id="f_aadhaar"></div>
+            <div class="form-group"><label>Prev School</label><input type="text" id="f_prevSchool"></div>
+            <div class="form-group"><label>Phone <span class="req">*</span></label><input type="text" id="f_phone"></div>
+            <div class="form-group"><label>Date of Admission <span class="req">*</span></label><input type="text" id="f_doa" placeholder="DD/MM/YYYY"></div>
+            <div class="form-group"><label>Class <span class="req">*</span></label><select id="f_class"><option>Nursery</option><option>1st</option><!-- etc --></select></div>
+            <div class="form-group"><label>Fee Paid</label><input type="number" id="f_fee"></div>
         </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" id="submitBtn" onclick="submitEntry()">Submit & Register</button>
+        </div>
+      </div>
     </div>
-    
-    <div id="dash" class="section" style="display:none">
-        <div class="card"><h3>Dashboard</h3><p>Live updates from sheets will appear here.</p></div>
+
+    <!-- EDIT PAGE -->
+    <div id="page-edit" class="page">
+        <!-- Your existing Edit HTML -->
     </div>
+  </main>
 </div>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwY9qAIz67ON33MPAOMoEfe6O2O5LHJR9-N5-2RrefqhHq8SsckPBrPBLGiGHQUFvxETA/exec";
+// CONFIG - UPDATE THESE
+const S1_ID = "1OGjVUEvD-vWJ73vANmjbNFezvXplhkTS5sSx3jDE5cI";
+const S1_AW_GID = "0";
+const S1_MK_GID = "1915083603"; 
+const S2_ID = "1-GLk792iA3SHeH26JalYGcu0w_ESVvQyhkGvkWe6r3U";
+const S2_TRIAL_GID = "1048925622";
+const APPS_SCRIPT_URL = "REPLACE_WITH_YOUR_DEPLOYED_URL";
 
-    function show(id) {
-        document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
-        document.getElementById(id).style.display = 'block';
-    }
+// ... (Keep your fetchCSV, parseCSV, toast, and date helper functions) ...
 
-    // Load Addresses on Startup
-    async function loadConfig() {
-        const resp = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify({action: 'getAddresses'})
-        });
-        const list = await resp.json();
-        const drop = document.getElementById('addrDrop');
-        drop.innerHTML = list.map(a => `<option>${a}</option>`).join('');
-    }
+async function submitEntry() {
+  const get = id => document.getElementById(id);
+  const data = {
+    regNo: get("f_regNo").value,
+    studentName: get("f_name").value,
+    motherName: get("f_mother").value,
+    fatherName: get("f_father").value,
+    address: get("f_address").value,
+    caste: get("f_caste").value,
+    gender: get("f_gender").value,
+    dob: get("f_dob").value,
+    aadhaar: get("f_aadhaar").value,
+    prevSchool: get("f_prevSchool").value,
+    phone: get("f_phone").value,
+    doa: get("f_doa").value,
+    cls: get("f_class").value,
+    fee: get("f_fee").value
+  };
 
-    async function submitData() {
-    const form = document.getElementById('regForm');
-    const formData = new FormData(form);
-    
-    // We use URLSearchParams to avoid the CORS 'pre-flight' OPTIONS request
-    // which Google Apps Script cannot handle.
-    const searchParams = new URLSearchParams();
-    for (const pair of formData) {
-        searchParams.append(pair[0], pair[1]);
-    }
+  const btn = document.getElementById("submitBtn");
+  btn.disabled = true;
+  btn.innerText = "Processing...";
 
-    try {
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: searchParams, // Sending as URL encoded instead of JSON
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        });
-        
-        alert("Data submitted! Check your sheets now.");
-        form.reset();
-    } catch (error) {
-        console.error("Submission failed:", error);
-        alert("Error connecting to Google Sheets. Check browser console.");
+  try {
+    const response = await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "addStudent", data: data })
+    });
+    const res = await response.json();
+    if (res.success) {
+      toast("Success! Adm No: " + res.admissionNumber);
+      get("admNumber").innerText = res.admissionNumber;
+      get("admBanner").classList.add("show");
+    } else {
+      toast("Error: " + res.error, "error");
     }
+  } catch (e) {
+    toast("Connection Error", "error");
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "Submit & Register";
+  }
 }
-    loadConfig();
+
+// ... (Keep your loadDashboard and loadEditTable functions) ...
 </script>
 </body>
 </html>
