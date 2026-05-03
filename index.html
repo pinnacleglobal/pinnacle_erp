@@ -1,133 +1,226 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pinnacle Global School - ERP Portal</title>
-    <!-- Styles omitted for brevity, keep your existing CSS here -->
-    <style>
-        /* Keep all your original CSS here */
-        :root { --navy: #1a3a8f; --gold: #b45309; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f8fafc; }
-        /* ... (Include your full CSS block from the original file) ... */
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pinnacle Global School - ERP Portal</title>
+<style>
+  :root {
+    --navy: #1a3a8f; --gold: #b45309; --gold-light: #fef3c7;
+    --gray-50: #f8fafc; --gray-100: #f1f5f9; --gray-200: #e2e8f0;
+    --gray-400: #94a3b8; --gray-700: #334155; --white: #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; color: var(--gray-700); line-height: 1.5; }
+  
+  /* Layout */
+  .app-container { display: flex; min-height: 100vh; }
+  .sidebar { width: 260px; background: var(--navy); color: white; padding: 1.5rem; flex-shrink: 0; }
+  .main { flex-grow: 1; padding: 2rem; overflow-x: hidden; }
+  
+  /* Sidebar */
+  .sidebar-header { margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; }
+  .sidebar-logo { font-size: 1.5rem; font-weight: 800; color: #f0c84a; }
+  .nav-item { padding: 0.75rem 1rem; border-radius: 0.5rem; cursor: pointer; transition: 0.2s; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px; }
+  .nav-item:hover { background: rgba(255,255,255,0.1); }
+  .nav-item.active { background: #f0c84a; color: var(--navy); font-weight: 600; }
+
+  /* Components */
+  .card { background: white; border-radius: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.5rem; margin-bottom: 1.5rem; }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, min-minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .stat-card { background: white; padding: 1.25rem; border-radius: 0.75rem; border-left: 4px solid var(--navy); }
+  .stat-value { font-size: 1.5rem; font-weight: 700; margin: 0.25rem 0; }
+  
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.25rem; }
+  .form-group label { display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--gray-700); }
+  input, select { width: 100%; padding: 0.625rem; border: 1px solid var(--gray-200); border-radius: 0.375rem; font-size: 0.9rem; }
+  
+  .btn { padding: 0.625rem 1.25rem; border-radius: 0.375rem; font-weight: 600; cursor: pointer; border: none; transition: 0.2s; }
+  .btn-primary { background: var(--navy); color: white; }
+  .btn-outline { background: transparent; border: 1px solid var(--gray-200); }
+  
+  .page { display: none; }
+  .page.active { display: block; }
+  .req { color: #dc2626; }
+  
+  /* Tables */
+  .table-wrapper { overflow-x: auto; margin-top: 1rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--gray-50); text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--gray-200); }
+  td { padding: 0.75rem; border-bottom: 1px solid var(--gray-200); }
+
+  .admission-banner { display: none; background: #fffbeb; border: 1px solid #fef3c7; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; color: #92400e; }
+  .admission-banner.show { display: flex; align-items: center; gap: 1rem; }
+  .toast { position: fixed; bottom: 2rem; right: 2rem; padding: 1rem 2rem; border-radius: 0.5rem; color: white; display: none; z-index: 1000; }
+  .toast.show { display: block; animation: slideIn 0.3s; }
+  .toast.success { background: #10b981; }
+  .toast.error { background: #ef4444; }
+
+  @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+</style>
 </head>
 <body>
 
 <div class="app-container">
   <nav class="sidebar">
     <div class="sidebar-header">
-      <div class="sidebar-logo">PGS</div>
-      <p class="sidebar-school-name">Tradition | Innovation | Excellence</p>
+      <div class="sidebar-logo">Pinnacle ERP</div>
+      <p style="font-size: 0.7rem; opacity: 0.7;">Tradition | Innovation | Excellence</p>
     </div>
-    <div class="nav-section">
-      <div class="nav-section-label">Main Menu</div>
-      <div class="nav-item active" onclick="showPage('dashboard',this)">Dashboard</div>
-      <div class="nav-item" onclick="showPage('entry',this)">Student Data Entry</div>
-      <div class="nav-item" onclick="showPage('edit',this)">Edit Student Records</div>
-    </div>
+    <div class="nav-item active" onclick="showPage('dashboard',this)">Dashboard</div>
+    <div class="nav-item" onclick="showPage('entry',this)">Data Entry</div>
+    <div class="nav-item" onclick="showPage('edit',this)">Edit Records</div>
   </nav>
 
   <main class="main">
     <!-- DASHBOARD -->
     <div id="page-dashboard" class="page active">
-      <!-- Your existing Dashboard HTML -->
+      <h2>Dashboard Overview</h2>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">Total Students</div><div class="stat-value" id="statTotal">...</div></div>
+        <div class="stat-card" style="border-color: var(--gold);"><div class="stat-label">This Month</div><div class="stat-value" id="statMonth">...</div></div>
+      </div>
+      <div class="card">
+        <h3>Recent Admissions</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Adm No.</th><th>Name</th><th>Class</th><th>Phone</th><th>Date</th></tr></thead>
+            <tbody id="dashBody"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
-    <!-- STUDENT ENTRY -->
+    <!-- ENTRY FORM -->
     <div id="page-entry" class="page">
-      <div class="page-header">
-        <h2>New Student Admission</h2>
-      </div>
+      <h2>New Student Admission</h2>
       <div class="admission-banner" id="admBanner">
-        <div id="admNumber"></div>
+        <strong>Success!</strong> Admission Number Allotted: <span id="admNumber" style="font-size: 1.2rem; font-weight: 800;"></span>
       </div>
       <div class="card">
         <div class="form-grid">
-            <div class="form-group"><label>Reg Form No <span class="req">*</span></label><input type="text" id="f_regNo"></div>
-            <div class="form-group"><label>Student Name <span class="req">*</span></label><input type="text" id="f_name"></div>
-            <div class="form-group"><label>Mother Name <span class="req">*</span></label><input type="text" id="f_mother"></div>
-            <div class="form-group"><label>Father Name <span class="req">*</span></label><input type="text" id="f_father"></div>
-            <div class="form-group"><label>Address <span class="req">*</span></label><select id="f_address"></select></div>
-            <div class="form-group"><label>Caste <span class="req">*</span></label><select id="f_caste"><option>General</option><option>OBC</option><option>SC</option><option>ST</option></select></div>
-            <div class="form-group"><label>Gender <span class="req">*</span></label><select id="f_gender"><option>Male</option><option>Female</option></select></div>
-            <div class="form-group"><label>DOB <span class="req">*</span></label><input type="text" id="f_dob" placeholder="DD/MM/YYYY"></div>
-            <div class="form-group"><label>Aadhaar</label><input type="text" id="f_aadhaar"></div>
-            <div class="form-group"><label>Prev School</label><input type="text" id="f_prevSchool"></div>
-            <div class="form-group"><label>Phone <span class="req">*</span></label><input type="text" id="f_phone"></div>
-            <div class="form-group"><label>Date of Admission <span class="req">*</span></label><input type="text" id="f_doa" placeholder="DD/MM/YYYY"></div>
-            <div class="form-group"><label>Class <span class="req">*</span></label><select id="f_class"><option>Nursery</option><option>1st</option><!-- etc --></select></div>
-            <div class="form-group"><label>Fee Paid</label><input type="number" id="f_fee"></div>
+          <div class="form-group"><label>Reg Form No <span class="req">*</span></label><input type="text" id="f_regNo" placeholder="e.g. 2024-001"></div>
+          <div class="form-group"><label>Student Name <span class="req">*</span></label><input type="text" id="f_name"></div>
+          <div class="form-group"><label>Mother's Name <span class="req">*</span></label><input type="text" id="f_mother"></div>
+          <div class="form-group"><label>Father's Name <span class="req">*</span></label><input type="text" id="f_father"></div>
+          <div class="form-group"><label>Address <span class="req">*</span></label><select id="f_address"><option value="">Loading...</option></select></div>
+          <div class="form-group"><label>Caste <span class="req">*</span></label><select id="f_caste"><option>General</option><option>OBC</option><option>SC</option><option>ST</option></select></div>
+          <div class="form-group"><label>Gender <span class="req">*</span></label><select id="f_gender"><option>Male</option><option>Female</option></select></div>
+          <div class="form-group"><label>Date of Birth <span class="req">*</span></label><input type="text" id="f_dob" placeholder="DD/MM/YYYY"></div>
+          <div class="form-group"><label>Aadhaar</label><input type="text" id="f_aadhaar" maxlength="12"></div>
+          <div class="form-group"><label>Phone <span class="req">*</span></label><input type="text" id="f_phone" maxlength="10"></div>
+          <div class="form-group"><label>Date of Admission <span class="req">*</span></label><input type="text" id="f_doa" placeholder="DD/MM/YYYY"></div>
+          <div class="form-group"><label>Class <span class="req">*</span></label>
+            <select id="f_class">
+              <option>Nursery</option><option>LKG</option><option>UKG</option>
+              <option>1st</option><option>2nd</option><option>3rd</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Registration Fee Paid</label><input type="number" id="f_fee"></div>
         </div>
-        <div class="form-actions">
-          <button class="btn btn-primary" id="submitBtn" onclick="submitEntry()">Submit & Register</button>
+        <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+          <button class="btn btn-primary" id="submitBtn" onclick="submitEntry()">Submit Registration</button>
+          <button class="btn btn-outline" onclick="clearForm()">Clear</button>
         </div>
       </div>
-    </div>
-
-    <!-- EDIT PAGE -->
-    <div id="page-edit" class="page">
-        <!-- Your existing Edit HTML -->
     </div>
   </main>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
-// CONFIG - UPDATE THESE
 const S1_ID = "1OGjVUEvD-vWJ73vANmjbNFezvXplhkTS5sSx3jDE5cI";
 const S1_AW_GID = "0";
-const S1_MK_GID = "1915083603"; 
-const S2_ID = "1-GLk792iA3SHeH26JalYGcu0w_ESVvQyhkGvkWe6r3U";
-const S2_TRIAL_GID = "1048925622";
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyfwqQHQMonqpF3VKqZyuZ2V34riEX9W0iFB--gKwerIbufJeWu5bWPC9-XEOUULk9NZA/exec";
+const S1_MK_GID = "1915083603";
+const APPS_SCRIPT_URL = "YOUR_DEPLOYED_WEB_APP_URL"; // REPLACE THIS
 
-// ... (Keep your fetchCSV, parseCSV, toast, and date helper functions) ...
-
-async function submitEntry() {
-  const get = id => document.getElementById(id);
-  const data = {
-    regNo: get("f_regNo").value,
-    studentName: get("f_name").value,
-    motherName: get("f_mother").value,
-    fatherName: get("f_father").value,
-    address: get("f_address").value,
-    caste: get("f_caste").value,
-    gender: get("f_gender").value,
-    dob: get("f_dob").value,
-    aadhaar: get("f_aadhaar").value,
-    prevSchool: get("f_prevSchool").value,
-    phone: get("f_phone").value,
-    doa: get("f_doa").value,
-    cls: get("f_class").value,
-    fee: get("f_fee").value
-  };
-
-  const btn = document.getElementById("submitBtn");
-  btn.disabled = true;
-  btn.innerText = "Processing...";
-
-  try {
-    const response = await fetch(APPS_SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify({ action: "addStudent", data: data })
-    });
-    const res = await response.json();
-    if (res.success) {
-      toast("Success! Adm No: " + res.admissionNumber);
-      get("admNumber").innerText = res.admissionNumber;
-      get("admBanner").classList.add("show");
-    } else {
-      toast("Error: " + res.error, "error");
-    }
-  } catch (e) {
-    toast("Connection Error", "error");
-  } finally {
-    btn.disabled = false;
-    btn.innerText = "Submit & Register";
-  }
+async function fetchCSV(sheetId, gid) {
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+  const res = await fetch(url);
+  const text = await res.text();
+  return text.split('\n').map(row => row.split(',').map(cell => cell.replace(/^"(.*)"$/, '$1')));
 }
 
-// ... (Keep your loadDashboard and loadEditTable functions) ...
+function toast(msg, type="success") {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.className = `toast show ${type}`;
+  setTimeout(() => t.className = "toast", 4000);
+}
+
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  el.classList.add('active');
+  if(name === 'dashboard') loadDashboard();
+}
+
+async function loadAddressDropdown() {
+  const rows = await fetchCSV(S1_ID, S1_MK_GID);
+  const sel = document.getElementById("f_address");
+  const addresses = rows.slice(3, 54).map(r => r[24]).filter(a => a && a.trim());
+  sel.innerHTML = '<option value="">Select Address</option>' + 
+    addresses.map(a => `<option value="${a}">${a}</option>`).join('');
+}
+
+async function submitEntry() {
+  const get = id => document.getElementById(id).value.trim();
+  const data = {
+    regNo: get("f_regNo"),
+    studentName: get("f_name"),
+    motherName: get("f_mother"),
+    fatherName: get("f_father"),
+    address: get("f_address"),
+    caste: get("f_caste"),
+    gender: get("f_gender"),
+    dob: get("f_dob"),
+    aadhaar: get("f_aadhaar"),
+    phone: get("f_phone"),
+    doa: get("f_doa"),
+    cls: get("f_class"),
+    fee: get("f_fee")
+  };
+
+  if(!data.studentName || !data.phone) return toast("Name and Phone are required", "error");
+
+  const btn = document.getElementById("submitBtn");
+  btn.disabled = true; btn.textContent = "Processing...";
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "addStudent", data })
+    });
+    const result = await res.json();
+    if(result.success) {
+      document.getElementById("admNumber").textContent = result.admissionNumber;
+      document.getElementById("admBanner").classList.add("show");
+      toast("Registered Successfully");
+      clearForm();
+    } else { toast(result.error, "error"); }
+  } catch(e) { toast("Server Error", "error"); }
+  finally { btn.disabled = false; btn.textContent = "Submit Registration"; }
+}
+
+function clearForm() {
+  document.querySelectorAll('input').forEach(i => i.value = "");
+  document.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+}
+
+async function loadDashboard() {
+  const rows = await fetchCSV(S1_ID, S1_AW_GID);
+  const data = rows.slice(1).filter(r => r[1]);
+  document.getElementById("statTotal").textContent = data.length;
+  document.getElementById("dashBody").innerHTML = data.slice(-10).reverse().map(r => `
+    <tr><td>${r[1]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[22]}</td><td>${r[2]}</td></tr>
+  `).join('');
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadAddressDropdown();
+  loadDashboard();
+});
 </script>
 </body>
 </html>
