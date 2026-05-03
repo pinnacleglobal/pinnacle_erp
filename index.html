@@ -88,20 +88,32 @@
     }
 
     async function submitData() {
-        const form = document.getElementById('regForm');
-        const formData = Object.fromEntries(new FormData(form).entries());
-        
-        const resp = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify({action: 'submit', data: formData})
-        });
-        
-        if (resp.ok) {
-            alert("Student Data Successfully Entered!");
-            form.reset();
-        }
+    const form = document.getElementById('regForm');
+    const formData = new FormData(form);
+    
+    // We use URLSearchParams to avoid the CORS 'pre-flight' OPTIONS request
+    // which Google Apps Script cannot handle.
+    const searchParams = new URLSearchParams();
+    for (const pair of formData) {
+        searchParams.append(pair[0], pair[1]);
     }
 
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: searchParams, // Sending as URL encoded instead of JSON
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
+        
+        alert("Data submitted! Check your sheets now.");
+        form.reset();
+    } catch (error) {
+        console.error("Submission failed:", error);
+        alert("Error connecting to Google Sheets. Check browser console.");
+    }
+}
     loadConfig();
 </script>
 </body>
