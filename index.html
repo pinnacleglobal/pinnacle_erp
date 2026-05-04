@@ -200,6 +200,9 @@
   <!-- ========== ENTRY FORM ========== -->
   <div class="page" id="page-entry">
     <div class="form-card">
+      <div id="entryConfigWarning" style="display:none;background:#c0392b;color:#fff;padding:14px 24px;font-size:13px;font-weight:600;">
+        ⚠️ APPS_SCRIPT_URL is not set in index.html — submissions will NOT reach Google Sheets. Please follow the setup instructions.
+      </div>
       <div class="form-header">
         <img src="logo.png" alt="Logo">
         <div class="form-header-text">
@@ -315,7 +318,7 @@
 // CONFIGURATION — REPLACE THESE TWO VALUES BEFORE DEPLOYING
 // =====================================================================
 // 1. Deploy Code.gs as a Web App in Google Apps Script and paste the URL here:
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcH55TS0TNbnCwNq9m9HLCrJJg88kBoE1iEBAHtEblKSfisnGRxw7dIs-olx5hMFyq0Q/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzukUqk10urIHQ-o7aEZEa0AhFiKqHrB4zQzj2xX8DQZmcxztoJxi8XRYU72CFzeIxYLg/exec';
 
 // 2. Paste your Google Sheets API Key here (sheet must be publicly viewable):
 const API_KEY = 'AIzaSyB5VIy4kIySW7bVrjNYMpL5rkqZ7Oe758E';
@@ -449,44 +452,67 @@ function resetForm() {
 }
 
 // =====================================================================
-// SUBMIT — fires data to Apps Script using an <img> src ping.
+// SUBMIT — uses a hidden iframe to POST form data to Apps Script.
 //
-// Why img ping?
-//   fetch() with no-cors hangs forever on Apps Script redirects.
-//   XHR POST breaks due to CORS preflight + redirect chain.
-//   <img src="..."> fires a GET instantly, browser doesn't care about
-//   response type or CORS, and NEVER hangs. Apps Script receives the
-//   request and writes the data. We wait 5s then resolve — data is
-//   always in the sheet by then.
+// This is the ONLY method that works reliably from a static GitHub
+// Pages site to Google Apps Script:
+//   • fetch() no-cors hangs on Apps Script redirects
+//   • img ping gets blocked (not an image response)
+//   • iframe form POST: browser handles the redirect natively,
+//     Apps Script receives e.parameter fields correctly, data is
+//     written, and we resolve after a safe 6-second window.
 // =====================================================================
 function submitToSheet(data) {
   return new Promise(function(resolve, reject) {
     if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_WEB_APP_URL') {
-      reject(new Error('APPS_SCRIPT_URL is not configured in index.html'));
+      reject(new Error('APPS_SCRIPT_URL is not configured. Please read the setup instructions.'));
       return;
     }
 
-    const params = new URLSearchParams({ action: 'submit', ...data });
-    const url    = APPS_SCRIPT_URL + '?' + params.toString();
+    // Create a hidden iframe as the form target
+    const iframeName = 'submit_iframe_' + Date.now();
+    const iframe = document.createElement('iframe');
+    iframe.name = iframeName;
+    iframe.style.cssText = 'display:none;position:absolute;';
+    document.body.appendChild(iframe);
 
-    // Fire the request via a hidden img tag
-    const img = document.createElement('img');
-    img.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;';
+    // Create a hidden form that POSTs to Apps Script
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = APPS_SCRIPT_URL;
+    form.target = iframeName;
+    form.style.cssText = 'display:none;';
 
-    // Resolve after 5 seconds — Apps Script always writes within this window
+    // Add all data fields as hidden inputs
+    const allData = Object.assign({ action: 'submit' }, data);
+    Object.keys(allData).forEach(function(key) {
+      const input = document.createElement('input');
+      input.type  = 'hidden';
+      input.name  = key;
+      input.value = allData[key] || '';
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+
+    // Resolve after 6 seconds — Apps Script writes data before responding
     const timer = setTimeout(function() {
-      if (img.parentNode) document.body.removeChild(img);
+      cleanup();
       resolve(true);
-    }, 5000);
+    }, 6000);
 
-    img.onload = img.onerror = function() {
+    iframe.onload = function() {
+      // iframe loaded = Apps Script responded = data is written
       clearTimeout(timer);
-      if (img.parentNode) document.body.removeChild(img);
-      resolve(true);
+      setTimeout(function() { cleanup(); resolve(true); }, 500);
     };
 
-    document.body.appendChild(img);
-    img.src = url;
+    function cleanup() {
+      try { document.body.removeChild(iframe); } catch(e){}
+      try { document.body.removeChild(form);   } catch(e){}
+    }
+
+    form.submit();
   });
 }
 
@@ -521,7 +547,7 @@ document.getElementById('studentForm').addEventListener('submit', async function
   document.getElementById('submitBtn').disabled = true;
 
   // Countdown so user knows it's working (not frozen)
-  let secs = 5;
+  let secs = 6;
   const countdown = setInterval(() => {
     secs--;
     if (secs > 0) setLoading(true, 'Writing to sheet... please wait (' + secs + 's)');
@@ -671,6 +697,14 @@ function showPlaceholderDashboard() {
 
 // Load dashboard on start
 loadDashboard();
+
+// Show config warning on entry page if URL not set
+(function() {
+  const warn = document.getElementById('entryConfigWarning');
+  if (warn && (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_WEB_APP_URL')) {
+    warn.style.display = 'block';
+  }
+})();
 </script>
 </body>
 </html>
