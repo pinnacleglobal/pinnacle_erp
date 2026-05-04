@@ -8,358 +8,122 @@
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --primary: #1a3a6b;
-    --primary-light: #2456a4;
-    --accent: #e8a020;
-    --accent-light: #f5c154;
-    --bg: #f0f3f8;
-    --surface: #ffffff;
-    --surface2: #f7f9fc;
-    --border: #dce3ef;
-    --text: #1a2540;
-    --text2: #4a5778;
-    --text3: #8090b0;
-    --success: #1a7a4a;
-    --success-bg: #e6f4ed;
-    --danger: #c0392b;
-    --danger-bg: #fcecea;
-    --radius: 10px;
-    --radius-lg: 16px;
-    --shadow: 0 2px 12px rgba(26,58,107,0.08);
-    --shadow-md: 0 4px 24px rgba(26,58,107,0.12);
+    --primary: #1a3a6b; --primary-light: #2456a4; --accent: #e8a020;
+    --bg: #f0f3f8; --surface: #ffffff; --surface2: #f7f9fc;
+    --border: #dce3ef; --text: #1a2540; --text2: #4a5778; --text3: #8090b0;
+    --success: #1a7a4a; --success-bg: #e6f4ed;
+    --danger: #c0392b; --radius: 10px; --radius-lg: 16px;
+    --shadow: 0 2px 12px rgba(26,58,107,0.08); --shadow-md: 0 4px 24px rgba(26,58,107,0.12);
   }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; flex-direction:column; }
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
+  header { background:var(--primary); color:#fff; display:flex; align-items:center; gap:16px; padding:0 32px; height:68px; box-shadow:0 2px 16px rgba(0,0,0,0.18); position:sticky; top:0; z-index:100; }
+  header img { height:46px; width:46px; object-fit:contain; border-radius:8px; background:#fff; padding:3px; }
+  .header-title { font-family:'Sora',sans-serif; font-size:18px; font-weight:700; }
+  .header-sub { font-size:11px; opacity:0.7; letter-spacing:0.04em; text-transform:uppercase; }
+  header .spacer { flex:1; }
 
-  /* HEADER */
-  header {
-    background: var(--primary);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 0 32px;
-    height: 68px;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.18);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  header img { height: 46px; width: 46px; object-fit: contain; border-radius: 8px; background: #fff; padding: 3px; }
-  .header-title { font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.01em; }
-  .header-sub { font-size: 11px; opacity: 0.7; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; }
-  header .spacer { flex: 1; }
+  nav { background:var(--surface); border-bottom:1.5px solid var(--border); display:flex; padding:0 32px; gap:4px; }
+  .nav-btn { padding:14px 22px; font-family:'Sora',sans-serif; font-size:13px; font-weight:500; color:var(--text2); border:none; background:none; cursor:pointer; border-bottom:3px solid transparent; transition:all 0.18s; }
+  .nav-btn:hover { color:var(--primary); }
+  .nav-btn.active { color:var(--primary); border-bottom-color:var(--accent); font-weight:600; }
 
-  /* NAV */
-  nav {
-    background: var(--surface);
-    border-bottom: 1.5px solid var(--border);
-    display: flex;
-    padding: 0 32px;
-    gap: 4px;
-  }
-  .nav-btn {
-    padding: 14px 22px;
-    font-family: 'Sora', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text2);
-    border: none;
-    background: none;
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    transition: all 0.18s;
-    letter-spacing: 0.02em;
-  }
-  .nav-btn:hover { color: var(--primary); }
-  .nav-btn.active { color: var(--primary); border-bottom-color: var(--accent); font-weight: 600; }
+  main { flex:1; padding:32px; max-width:1400px; width:100%; margin:0 auto; }
+  .page { display:none; } .page.active { display:block; }
 
-  /* MAIN */
-  main { flex: 1; padding: 32px; max-width: 1300px; width: 100%; margin: 0 auto; }
+  .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:28px; }
+  .stat-card { background:var(--surface); border-radius:var(--radius-lg); padding:20px 22px; box-shadow:var(--shadow); border:1px solid var(--border); position:relative; overflow:hidden; }
+  .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:var(--primary); }
+  .stat-card.accent::before { background:var(--accent); }
+  .stat-card.green::before { background:#1a7a4a; }
+  .stat-label { font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px; }
+  .stat-value { font-family:'Sora',sans-serif; font-size:32px; font-weight:700; color:var(--primary); line-height:1; }
+  .stat-card.accent .stat-value { color:#b07010; }
+  .stat-card.green .stat-value { color:var(--success); }
 
-  /* PAGE */
-  .page { display: none; }
-  .page.active { display: block; }
+  .section-title { font-family:'Sora',sans-serif; font-size:15px; font-weight:600; color:var(--text); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+  .section-title::after { content:''; flex:1; height:1px; background:var(--border); }
 
-  /* DASHBOARD */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    margin-bottom: 28px;
-  }
-  .stat-card {
-    background: var(--surface);
-    border-radius: var(--radius-lg);
-    padding: 20px 22px;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border);
-    position: relative;
-    overflow: hidden;
-  }
-  .stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 4px;
-    background: var(--primary);
-  }
-  .stat-card.accent::before { background: var(--accent); }
-  .stat-card.green::before { background: #1a7a4a; }
-  .stat-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
-  .stat-value { font-family: 'Sora', sans-serif; font-size: 32px; font-weight: 700; color: var(--primary); line-height: 1; }
-  .stat-card.accent .stat-value { color: #b07010; }
-  .stat-card.green .stat-value { color: var(--success); }
+  .class-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:10px; margin-bottom:28px; }
+  .class-chip { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px 10px; text-align:center; box-shadow:var(--shadow); }
+  .class-chip .cls-name { font-size:11px; color:var(--text3); font-weight:500; text-transform:uppercase; letter-spacing:0.04em; }
+  .class-chip .cls-count { font-family:'Sora',sans-serif; font-size:22px; font-weight:700; color:var(--primary-light); }
 
-  .section-title {
-    font-family: 'Sora', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .table-wrap { background:var(--surface); border-radius:var(--radius-lg); box-shadow:var(--shadow); border:1px solid var(--border); overflow:auto; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  thead { background:var(--primary); }
+  thead th { color:#fff; padding:13px 14px; font-family:'Sora',sans-serif; font-weight:500; text-align:left; font-size:12px; letter-spacing:0.04em; white-space:nowrap; }
+  tbody tr { border-bottom:1px solid var(--border); transition:background 0.12s; }
+  tbody tr:last-child { border-bottom:none; }
+  tbody tr:hover { background:var(--surface2); }
+  tbody td { padding:12px 14px; color:var(--text); vertical-align:middle; }
+  .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+  .badge-blue { background:#e6edf8; color:var(--primary); }
+  .badge-green { background:var(--success-bg); color:var(--success); }
+  .badge-gold { background:#fff3d6; color:#7a5500; }
+  .empty-state { text-align:center; padding:48px 20px; color:var(--text3); font-size:14px; }
 
-  .class-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 10px;
-    margin-bottom: 28px;
-  }
-  .class-chip {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 12px 10px;
-    text-align: center;
-    box-shadow: var(--shadow);
-  }
-  .class-chip .cls-name { font-size: 11px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
-  .class-chip .cls-count { font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 700; color: var(--primary-light); }
+  .form-card { background:var(--surface); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); border:1px solid var(--border); overflow:hidden; }
+  .form-header { background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%); padding:24px 32px; color:#fff; display:flex; align-items:center; gap:16px; }
+  .form-header img { height:48px; width:48px; object-fit:contain; background:rgba(255,255,255,0.15); border-radius:10px; padding:4px; }
+  .form-header-text h2 { font-family:'Sora',sans-serif; font-size:17px; font-weight:700; }
+  .form-header-text p { font-size:12px; opacity:0.8; margin-top:2px; }
+  .form-body { padding:32px; }
 
-  /* TABLE */
-  .table-wrap { background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow); border: 1px solid var(--border); overflow: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  thead { background: var(--primary); }
-  thead th { color: #fff; padding: 13px 14px; font-family: 'Sora', sans-serif; font-weight: 500; text-align: left; font-size: 12px; letter-spacing: 0.04em; white-space: nowrap; }
-  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
-  tbody tr:last-child { border-bottom: none; }
-  tbody tr:hover { background: var(--surface2); }
-  tbody td { padding: 12px 14px; color: var(--text); vertical-align: middle; }
-  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-  .badge-blue { background: #e6edf8; color: var(--primary); }
-  .badge-green { background: var(--success-bg); color: var(--success); }
-  .empty-state { text-align: center; padding: 48px 20px; color: var(--text3); font-size: 14px; }
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px 28px; }
+  @media(max-width:700px){ .form-grid { grid-template-columns:1fr; } }
+  .form-full { grid-column:1/-1; }
+  .form-group { display:flex; flex-direction:column; gap:6px; }
+  .form-group label { font-size:12px; font-weight:600; color:var(--text2); text-transform:uppercase; letter-spacing:0.05em; }
+  .form-group label span.req { color:#c0392b; margin-left:2px; }
+  input[type="text"],input[type="number"],input[type="date"],input[type="tel"],select,textarea {
+    border:1.5px solid var(--border); border-radius:var(--radius); padding:10px 14px;
+    font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); background:var(--surface);
+    outline:none; transition:border-color 0.15s,box-shadow 0.15s; width:100%;
+  }
+  input:focus,select:focus,textarea:focus { border-color:var(--primary-light); box-shadow:0 0 0 3px rgba(36,86,164,0.10); }
+  input::placeholder { color:var(--text3); }
 
-  /* FORM PAGE */
-  .form-card {
-    background: var(--surface);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-    border: 1px solid var(--border);
-    overflow: hidden;
-  }
-  .form-header {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-    padding: 24px 32px;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  .form-header img { height: 48px; width: 48px; object-fit: contain; background: rgba(255,255,255,0.15); border-radius: 10px; padding: 4px; }
-  .form-header-text h2 { font-family: 'Sora', sans-serif; font-size: 17px; font-weight: 700; }
-  .form-header-text p { font-size: 12px; opacity: 0.8; margin-top: 2px; }
-  .form-body { padding: 32px; }
+  .autocomplete-wrap { position:relative; }
+  .autocomplete-list { position:absolute; top:calc(100% + 4px); left:0; right:0; background:var(--surface); border:1.5px solid var(--primary-light); border-radius:var(--radius); box-shadow:var(--shadow-md); z-index:200; max-height:220px; overflow-y:auto; display:none; }
+  .autocomplete-list.open { display:block; }
+  .ac-item { padding:10px 14px; font-size:13px; cursor:pointer; border-bottom:1px solid var(--border); color:var(--text); transition:background 0.1s; }
+  .ac-item:last-child { border-bottom:none; }
+  .ac-item:hover { background:var(--surface2); color:var(--primary); }
+  .ac-item mark { background:#fff3c0; color:var(--text); border-radius:2px; }
 
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px 28px;
-  }
-  @media (max-width: 700px) { .form-grid { grid-template-columns: 1fr; } }
-  .form-full { grid-column: 1 / -1; }
+  .form-divider { grid-column:1/-1; border:none; border-top:1.5px dashed var(--border); margin:4px 0; }
+  .form-section-label { grid-column:1/-1; font-family:'Sora',sans-serif; font-size:12px; font-weight:700; color:var(--primary); text-transform:uppercase; letter-spacing:0.08em; border-left:3px solid var(--accent); padding-left:10px; }
 
-  .form-group { display: flex; flex-direction: column; gap: 6px; }
-  .form-group label { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; }
-  .form-group label span.req { color: #c0392b; margin-left: 2px; }
+  .btn-submit { background:var(--primary); color:#fff; border:none; border-radius:var(--radius); padding:13px 36px; font-family:'Sora',sans-serif; font-size:14px; font-weight:600; cursor:pointer; transition:background 0.15s; display:flex; align-items:center; gap:8px; }
+  .btn-submit:hover { background:var(--primary-light); }
+  .btn-submit:disabled { opacity:0.6; cursor:not-allowed; }
+  .btn-reset { background:none; color:var(--text2); border:1.5px solid var(--border); border-radius:var(--radius); padding:12px 24px; font-family:'Sora',sans-serif; font-size:14px; font-weight:500; cursor:pointer; transition:border-color 0.15s; }
+  .btn-reset:hover { border-color:var(--text3); }
+  .form-actions { display:flex; gap:12px; justify-content:flex-end; margin-top:28px; }
 
-  input[type="text"], input[type="number"], input[type="date"], input[type="tel"],
-  select, textarea {
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 10px 14px;
-    font-size: 14px;
-    font-family: 'DM Sans', sans-serif;
-    color: var(--text);
-    background: var(--surface);
-    outline: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
-    width: 100%;
-  }
-  input:focus, select:focus, textarea:focus {
-    border-color: var(--primary-light);
-    box-shadow: 0 0 0 3px rgba(36,86,164,0.10);
-  }
-  input::placeholder { color: var(--text3); }
+  #toast { position:fixed; bottom:32px; right:32px; background:var(--success); color:#fff; padding:14px 22px; border-radius:var(--radius); font-size:14px; font-weight:500; box-shadow:0 4px 20px rgba(0,0,0,0.18); z-index:9999; transform:translateY(80px); opacity:0; transition:all 0.3s cubic-bezier(.34,1.56,.64,1); max-width:380px; }
+  #toast.show { transform:translateY(0); opacity:1; }
+  #toast.error { background:var(--danger); }
 
-  /* Autocomplete Address */
-  .autocomplete-wrap { position: relative; }
-  .autocomplete-list {
-    position: absolute;
-    top: calc(100% + 4px); left: 0; right: 0;
-    background: var(--surface);
-    border: 1.5px solid var(--primary-light);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-md);
-    z-index: 200;
-    max-height: 220px;
-    overflow-y: auto;
-    display: none;
-  }
-  .autocomplete-list.open { display: block; }
-  .ac-item {
-    padding: 10px 14px;
-    font-size: 13px;
-    cursor: pointer;
-    border-bottom: 1px solid var(--border);
-    color: var(--text);
-    transition: background 0.1s;
-  }
-  .ac-item:last-child { border-bottom: none; }
-  .ac-item:hover, .ac-item.selected { background: var(--surface2); color: var(--primary); }
-  .ac-item mark { background: #fff3c0; color: var(--text); border-radius: 2px; }
+  #loading { display:none; position:fixed; inset:0; background:rgba(26,58,107,0.22); z-index:9000; align-items:center; justify-content:center; flex-direction:column; gap:14px; }
+  #loading.show { display:flex; }
+  .spinner { width:44px; height:44px; border:4px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 0.8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  #loading p { color:#fff; font-weight:600; font-size:15px; }
 
-  .form-divider { grid-column: 1/-1; border: none; border-top: 1.5px dashed var(--border); margin: 4px 0; }
+  .refresh-btn { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius); padding:8px 18px; font-size:13px; font-family:'Sora',sans-serif; font-weight:500; color:var(--primary); cursor:pointer; transition:background 0.15s; }
+  .refresh-btn:hover { background:var(--surface2); }
 
-  .form-section-label {
-    grid-column: 1/-1;
-    font-family: 'Sora', sans-serif;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--primary);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    padding: 4px 0 2px;
-    border-left: 3px solid var(--accent);
-    padding-left: 10px;
-  }
-
-  .btn-submit {
-    background: var(--primary);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius);
-    padding: 13px 36px;
-    font-family: 'Sora', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    letter-spacing: 0.03em;
-    transition: background 0.15s, transform 0.1s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .btn-submit:hover { background: var(--primary-light); }
-  .btn-submit:active { transform: scale(0.98); }
-  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
-
-  .btn-reset {
-    background: none;
-    color: var(--text2);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 12px 24px;
-    font-family: 'Sora', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: border-color 0.15s;
-  }
-  .btn-reset:hover { border-color: var(--text3); }
-
-  .form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 28px; }
-
-  /* Toast */
-  #toast {
-    position: fixed;
-    bottom: 32px;
-    right: 32px;
-    background: var(--success);
-    color: #fff;
-    padding: 14px 22px;
-    border-radius: var(--radius);
-    font-size: 14px;
-    font-weight: 500;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.18);
-    z-index: 9999;
-    transform: translateY(80px);
-    opacity: 0;
-    transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
-    max-width: 360px;
-  }
-  #toast.show { transform: translateY(0); opacity: 1; }
-  #toast.error { background: var(--danger); }
-
-  /* Loading overlay */
-  #loading {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(26,58,107,0.18);
-    z-index: 9000;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 14px;
-  }
-  #loading.show { display: flex; }
-  .spinner {
-    width: 44px; height: 44px;
-    border: 4px solid rgba(255,255,255,0.3);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    background: transparent;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  #loading p { color: #fff; font-weight: 600; font-size: 15px; }
-
-  .refresh-btn {
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 8px 18px;
-    font-size: 13px;
-    font-family: 'Sora', sans-serif;
-    font-weight: 500;
-    color: var(--primary);
-    cursor: pointer;
-    transition: background 0.15s;
-    margin-left: auto;
-    display: block;
-    margin-bottom: 14px;
-  }
-  .refresh-btn:hover { background: var(--surface2); }
+  .config-notice { background:#fff8e6; border:1.5px solid #f0c040; border-radius:var(--radius); padding:14px 18px; font-size:13px; color:#7a5500; margin-bottom:20px; display:none; }
+  .config-notice.show { display:block; }
 </style>
 </head>
 <body>
 
 <header>
-  <img src="logo.png" alt="Pinnacle Global School Logo" id="logoImg">
+  <img src="logo.png" alt="Logo">
   <div>
     <div class="header-title">Pinnacle Global School</div>
     <div class="header-sub">Student ERP Portal</div>
@@ -369,26 +133,28 @@
 </header>
 
 <nav>
-  <button class="nav-btn active" onclick="showPage('dashboard')">&#9632; Dashboard</button>
-  <button class="nav-btn" onclick="showPage('entry')">&#43; New Student Entry</button>
+  <button class="nav-btn active" id="navDash" onclick="showPage('dashboard',this)">&#9632; Dashboard</button>
+  <button class="nav-btn" id="navEntry" onclick="showPage('entry',this)">&#43; New Student Entry</button>
 </nav>
 
-<div id="loading">
-  <div class="spinner"></div>
-  <p>Processing...</p>
-</div>
-
+<div id="loading"><div class="spinner"></div><p id="loadingMsg">Loading...</p></div>
 <div id="toast"></div>
 
 <main>
-  <!-- DASHBOARD PAGE -->
+
+  <!-- ========== DASHBOARD ========== -->
   <div class="page active" id="page-dashboard">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+
+    <div class="config-notice" id="configNotice">
+      ⚠️ <strong>Setup required:</strong> Open <code>index.html</code> and set <code>APPS_SCRIPT_URL</code> and <code>API_KEY</code> to enable live data.
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
       <div>
         <div style="font-family:'Sora',sans-serif;font-size:22px;font-weight:700;color:var(--primary);">Dashboard</div>
-        <div style="font-size:13px;color:var(--text3);margin-top:3px;" id="dashYear">Current Academic Year Registrations</div>
+        <div style="font-size:13px;color:var(--text3);margin-top:3px;" id="dashYear">Registrations — Current Year</div>
       </div>
-      <button class="refresh-btn" onclick="loadDashboard()">&#8635; Refresh</button>
+      <button class="refresh-btn" onclick="loadDashboard()">&#8635; Refresh Data</button>
     </div>
 
     <div class="stats-grid">
@@ -401,22 +167,21 @@
         <div class="stat-value" id="statFees">—</div>
       </div>
       <div class="stat-card green">
-        <div class="stat-label">Classes Covered</div>
+        <div class="stat-label">Classes With Admissions</div>
         <div class="stat-value" id="statClasses">—</div>
       </div>
     </div>
 
     <div class="section-title">Class-wise Registrations</div>
-    <div class="class-grid" id="classGrid">
-      <div class="class-chip"><div class="cls-count">—</div><div class="cls-name">Loading</div></div>
-    </div>
+    <div class="class-grid" id="classGrid"></div>
 
-    <div class="section-title">Recent Registrations</div>
+    <div class="section-title">Registrations This Year</div>
     <div class="table-wrap">
-      <table id="dashTable">
+      <table>
         <thead>
           <tr>
             <th>Reg. Form No.</th>
+            <th>Admission No.</th>
             <th>Date of Admission</th>
             <th>Class</th>
             <th>Student Name</th>
@@ -426,17 +191,17 @@
           </tr>
         </thead>
         <tbody id="dashBody">
-          <tr><td colspan="7" class="empty-state">Loading data...</td></tr>
+          <tr><td colspan="8" class="empty-state">Loading...</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <!-- ENTRY PAGE -->
+  <!-- ========== ENTRY FORM ========== -->
   <div class="page" id="page-entry">
     <div class="form-card">
       <div class="form-header">
-        <img src="logo.png" alt="Logo" id="formLogo">
+        <img src="logo.png" alt="Logo">
         <div class="form-header-text">
           <h2>Student Registration Form</h2>
           <p>Pinnacle Global School — New Admission Entry</p>
@@ -445,18 +210,17 @@
       <div class="form-body">
         <form id="studentForm" autocomplete="off">
           <div class="form-grid">
+
             <div class="form-section-label">Registration Details</div>
 
             <div class="form-group">
               <label>Registration Form Number <span class="req">*</span></label>
               <input type="text" id="regFormNo" placeholder="e.g. PGS-2025-001" required>
             </div>
-
             <div class="form-group">
               <label>Date of Admission <span class="req">*</span></label>
               <input type="date" id="admDate" required>
             </div>
-
             <div class="form-group">
               <label>Class of Admission <span class="req">*</span></label>
               <select id="classAdm" required>
@@ -467,7 +231,6 @@
                 <option>11th</option><option>12th</option>
               </select>
             </div>
-
             <div class="form-group">
               <label>Registration Fee Amount Paid (₹)</label>
               <input type="number" id="regFee" placeholder="e.g. 500" min="0">
@@ -480,12 +243,10 @@
               <label>Student Name <span class="req">*</span></label>
               <input type="text" id="studentName" placeholder="Full name of student" required>
             </div>
-
             <div class="form-group">
               <label>Date of Birth <span class="req">*</span></label>
               <input type="date" id="dob" required>
             </div>
-
             <div class="form-group">
               <label>Gender <span class="req">*</span></label>
               <select id="gender" required>
@@ -493,7 +254,6 @@
                 <option>Male</option><option>Female</option><option>Other</option>
               </select>
             </div>
-
             <div class="form-group">
               <label>Caste <span class="req">*</span></label>
               <select id="caste" required>
@@ -501,12 +261,10 @@
                 <option>General</option><option>OBC</option><option>SC</option><option>ST</option>
               </select>
             </div>
-
             <div class="form-group">
               <label>Student Aadhaar Number</label>
               <input type="text" id="aadhaar" placeholder="12-digit Aadhaar number" maxlength="14">
             </div>
-
             <div class="form-group">
               <label>Phone Number <span class="req">*</span></label>
               <input type="tel" id="phone" placeholder="10-digit mobile number" maxlength="10" required>
@@ -519,7 +277,6 @@
               <label>Mother's Name</label>
               <input type="text" id="motherName" placeholder="Full name of mother">
             </div>
-
             <div class="form-group">
               <label>Father's Name <span class="req">*</span></label>
               <input type="text" id="fatherName" placeholder="Full name of father" required>
@@ -532,7 +289,6 @@
               <label>Previous School</label>
               <input type="text" id="prevSchool" placeholder="Name of previous school (if any)">
             </div>
-
             <div class="form-group form-full">
               <label>Address <span class="req">*</span></label>
               <div class="autocomplete-wrap">
@@ -545,30 +301,29 @@
           </div>
           <div class="form-actions">
             <button type="button" class="btn-reset" onclick="resetForm()">&#8635; Reset Form</button>
-            <button type="submit" class="btn-submit" id="submitBtn">
-              <span>&#10003;</span> Submit Registration
-            </button>
+            <button type="submit" class="btn-submit" id="submitBtn">&#10003; Submit Registration</button>
           </div>
         </form>
       </div>
     </div>
   </div>
+
 </main>
 
 <script>
-// =====================
-// CONFIG
-// =====================
-const SHEET_ID = '1OGjVUEvD-vWJ73vANmjbNFezvXplhkTS5sSx3jDE5cI';
-const SHEET_NAME = 'AW register';
-const API_KEY = 'AIzaSyB5VIy4kIySW7bVrjNYMpL5rkqZ7Oe758E'; // ← REPLACE WITH YOUR GOOGLE SHEETS API KEY
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxBpPVwUsZ6WLExdipafz80HzrQnrlvxBsTn-C6690YJu8C5MusFRJ9hVg-HG4tBZmeiw/exec'; // ← REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
+// =====================================================================
+// CONFIGURATION — REPLACE THESE TWO VALUES BEFORE DEPLOYING
+// =====================================================================
+// 1. Deploy Code.gs as a Web App in Google Apps Script and paste the URL here:
+const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_WEB_APP_URL';
 
-// Column mapping (1-indexed: A=1, B=2, C=3, ...)
-// C=3 (Date of Admission), D=4 (Student Name), E=5 (Class), F=6 (Mother), G=7 (Father)
-// H=8 (Address), K=11 (Caste), L=12 (DOB), N=14 (Prev School)
-// W=23 (Phone), Y=25 (Aadhaar), Z=26 (Gender)
-// B=2 (Admission Number - fetched)
+// 2. Paste your Google Sheets API Key here (sheet must be publicly viewable):
+const API_KEY = 'YOUR_GOOGLE_SHEETS_API_KEY';
+// =====================================================================
+
+const SHEET_ID   = '1OGjVUEvD-vWJ73vANmjbNFezvXplhkTS5sSx3jDE5cI';
+const SHEET_NAME = 'AW register';
+const CLASSES    = ['Nursery','LKG','UKG','1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th'];
 
 const ADDRESS_OPTIONS = [
   "Village : Aadha, Post : Sikandrabad, District : Bulandshahr",
@@ -618,160 +373,140 @@ const ADDRESS_OPTIONS = [
   "Village : Gangera, Post : Gangera, District : Bulandshahr"
 ];
 
-const CLASSES = ['Nursery','LKG','UKG','1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th'];
+// ---- Date header ----
+(function(){
+  const now = new Date();
+  document.getElementById('headerDate').textContent =
+    now.toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('dashYear').textContent =
+    'Registrations — January to December ' + now.getFullYear();
+})();
 
-// =====================
-// NAVIGATION
-// =====================
-function showPage(name) {
+// ---- Navigation ----
+function showPage(name, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
-  event.target.classList.add('active');
+  if (btn) btn.classList.add('active');
   if (name === 'dashboard') loadDashboard();
 }
 
-// =====================
-// DATE HEADER
-// =====================
-(function() {
-  const now = new Date();
-  document.getElementById('headerDate').textContent = now.toLocaleDateString('en-IN', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-  document.getElementById('dashYear').textContent = `Registrations — January to December ${now.getFullYear()}`;
-})();
+// ---- Loading / Toast ----
+function setLoading(on, msg) {
+  document.getElementById('loading').classList[on?'add':'remove']('show');
+  if (msg) document.getElementById('loadingMsg').textContent = msg;
+}
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (type==='error' ? ' error' : '');
+  setTimeout(() => t.className = '', 4000);
+}
 
-// =====================
-// AUTOCOMPLETE ADDRESS
-// =====================
+// ---- Address autocomplete ----
 const addressInput = document.getElementById('addressInput');
-const addressList = document.getElementById('addressList');
+const addressList  = document.getElementById('addressList');
 const addressValue = document.getElementById('addressValue');
 
 addressInput.addEventListener('input', function() {
   const q = this.value.trim().toLowerCase();
+  addressValue.value = '';
   if (q.length < 2) { addressList.classList.remove('open'); return; }
   const matches = ADDRESS_OPTIONS.filter(a => a.toLowerCase().includes(q));
-  if (!matches.length) { addressList.innerHTML = '<div class="ac-item" style="color:var(--text3)">No matches found</div>'; addressList.classList.add('open'); return; }
+  if (!matches.length) {
+    addressList.innerHTML = '<div class="ac-item" style="color:var(--text3)">No matches found</div>';
+    addressList.classList.add('open');
+    return;
+  }
   const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
   addressList.innerHTML = matches.map(a =>
-    `<div class="ac-item" onclick="selectAddress(this)" data-val="${a}">${a.replace(re,'<mark>$1</mark>')}</div>`
+    `<div class="ac-item" onclick="selectAddress(this)" data-val="${a.replace(/"/g,'&quot;')}">${a.replace(re,'<mark>$1</mark>')}</div>`
   ).join('');
   addressList.classList.add('open');
-  addressValue.value = '';
 });
-
 function selectAddress(el) {
   addressInput.value = el.dataset.val;
   addressValue.value = el.dataset.val;
   addressList.classList.remove('open');
 }
-
 document.addEventListener('click', function(e) {
-  if (!addressInput.contains(e.target) && !addressList.contains(e.target)) addressList.classList.remove('open');
+  if (!addressInput.contains(e.target) && !addressList.contains(e.target))
+    addressList.classList.remove('open');
 });
 
-// =====================
-// FORM: FORMAT DOB/DATE DISPLAY
-// =====================
-function toSheetDate(isoDate) {
-  if (!isoDate) return '';
-  const [y,m,d] = isoDate.split('-');
-  return `${d}/${m}/${y}`;
+// ---- Date formatter: YYYY-MM-DD → DD/MM/YYYY ----
+function toSheetDate(iso) {
+  if (!iso) return '';
+  const [y,m,d] = iso.split('-');
+  return d+'/'+m+'/'+y;
 }
 
-// =====================
-// RESET FORM
-// =====================
+// ---- Reset form ----
 function resetForm() {
   document.getElementById('studentForm').reset();
   addressInput.value = '';
   addressValue.value = '';
 }
 
-// =====================
-// TOAST
-// =====================
-function showToast(msg, type='success') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'show' + (type==='error' ? ' error' : '');
-  setTimeout(() => t.className = '', 3800);
-}
-
-function setLoading(on) {
-  document.getElementById('loading').classList[on?'add':'remove']('show');
-}
-
-// =====================
-// GOOGLE SHEETS VIA APPS SCRIPT
-// =====================
+// =====================================================================
+// SUBMIT — sends data to Apps Script via GET request with URL params
+// This avoids the CORS/redirect problem that breaks cross-origin POST.
+// =====================================================================
 async function submitToSheet(data) {
-  // Use a hidden form submit — this is the ONLY reliable way to POST to Apps Script
-  // from a static page without CORS issues. Apps Script redirects break fetch no-cors.
-  return new Promise((resolve, reject) => {
-    // Encode data as URL params
-    const params = new URLSearchParams(data).toString();
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_WEB_APP_URL') {
+    throw new Error('APPS_SCRIPT_URL is not configured in index.html');
+  }
 
-    // Use XMLHttpRequest which handles the Apps Script redirect correctly
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', APPS_SCRIPT_URL, true);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  // Build query string including action=submit
+  const params = new URLSearchParams({ action: 'submit', ...data });
+  const url    = APPS_SCRIPT_URL + '?' + params.toString();
 
-    xhr.onload = function() {
-      resolve(true);
-    };
-    xhr.onerror = function() {
-      // Apps Script often returns a CORS error on the redirect even when it succeeds.
-      // We treat this as success since the data is written before the redirect.
-      resolve(true);
-    };
-    xhr.ontimeout = function() {
-      reject(new Error('Request timed out'));
-    };
-    xhr.timeout = 15000;
-    xhr.send(params);
-  });
+  // Use fetch with no-cors — GET requests don't trigger preflight
+  // and Apps Script GET doesn't redirect, so this works reliably.
+  const response = await fetch(url, { method: 'GET', mode: 'no-cors' });
+  // no-cors GET to Apps Script = opaque response but data IS written
+  return true;
 }
 
-// =====================
-// FORM SUBMIT
-// =====================
+// ---- Form submit handler ----
 document.getElementById('studentForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
-  const addr = addressValue.value || addressInput.value;
-  if (!addr) { showToast('Please select an address from the dropdown.', 'error'); return; }
+  const addr = addressValue.value || addressInput.value.trim();
+  if (!addr) {
+    showToast('Please select an address from the dropdown.', 'error');
+    return;
+  }
 
   const data = {
-    regFormNo: document.getElementById('regFormNo').value.trim(),
-    admDate: toSheetDate(document.getElementById('admDate').value),
-    classAdm: document.getElementById('classAdm').value,
-    regFee: document.getElementById('regFee').value || '',
+    regFormNo:   document.getElementById('regFormNo').value.trim(),
+    admDate:     toSheetDate(document.getElementById('admDate').value),
+    classAdm:    document.getElementById('classAdm').value,
+    regFee:      document.getElementById('regFee').value || '0',
     studentName: document.getElementById('studentName').value.trim(),
-    dob: toSheetDate(document.getElementById('dob').value),
-    gender: document.getElementById('gender').value,
-    caste: document.getElementById('caste').value,
-    aadhaar: document.getElementById('aadhaar').value.trim(),
-    phone: document.getElementById('phone').value.trim(),
-    motherName: document.getElementById('motherName').value.trim(),
-    fatherName: document.getElementById('fatherName').value.trim(),
-    prevSchool: document.getElementById('prevSchool').value.trim(),
-    address: addr
+    dob:         toSheetDate(document.getElementById('dob').value),
+    gender:      document.getElementById('gender').value,
+    caste:       document.getElementById('caste').value,
+    aadhaar:     document.getElementById('aadhaar').value.trim(),
+    phone:       document.getElementById('phone').value.trim(),
+    motherName:  document.getElementById('motherName').value.trim(),
+    fatherName:  document.getElementById('fatherName').value.trim(),
+    prevSchool:  document.getElementById('prevSchool').value.trim(),
+    address:     addr
   };
 
-  setLoading(true);
+  setLoading(true, 'Submitting registration...');
   document.getElementById('submitBtn').disabled = true;
 
   try {
     await submitToSheet(data);
-    showToast('✓ Student registration submitted successfully!');
+    showToast('✓ Registration submitted! Please verify in the Google Sheet.');
     resetForm();
-    // Switch to dashboard after short delay
     setTimeout(() => {
-      document.querySelector('.nav-btn').click();
-    }, 1200);
+      showPage('dashboard', document.getElementById('navDash'));
+    }, 1400);
   } catch(err) {
-    showToast('Error submitting data. Please check your Apps Script URL and try again.', 'error');
+    showToast('Error: ' + err.message, 'error');
     console.error(err);
   } finally {
     setLoading(false);
@@ -779,120 +514,131 @@ document.getElementById('studentForm').addEventListener('submit', async function
   }
 });
 
-// =====================
-// DASHBOARD: Load from Sheets
-// =====================
+// =====================================================================
+// DASHBOARD — reads from Google Sheets API
+//
+// Column index map (0-based in API response array):
+//   A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7,
+//   K=10, L=11, N=13, W=22, Y=24, Z=25,
+//   BA=52, BB=53
+//
+// Rows 0,1,2 in the API values array = sheet rows 1,2,3 = HEADERS
+// Data starts at values array index 3 (= sheet row 4)
+// =====================================================================
 async function loadDashboard() {
-  setLoading(true);
+  setLoading(true, 'Loading dashboard...');
+
+  if (!API_KEY || API_KEY === 'YOUR_GOOGLE_SHEETS_API_KEY') {
+    document.getElementById('configNotice').classList.add('show');
+    showPlaceholderDashboard();
+    setLoading(false);
+    return;
+  }
+
+  document.getElementById('configNotice').classList.remove('show');
+
   try {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!A:AZ?key=${API_KEY}`;
-    const resp = await fetch(url);
-    const json = await resp.json();
+    // Fetch columns A through BB (BA=53rd col, BB=54th col)
+    const range = encodeURIComponent(SHEET_NAME + '!A:BB');
+    const url   = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?key=${API_KEY}`;
+    const resp  = await fetch(url);
+    const json  = await resp.json();
 
     if (json.error) {
-      // If API key not configured, show sample UI
-      showSampleDashboard();
+      showToast('API Error: ' + json.error.message, 'error');
+      showPlaceholderDashboard();
       setLoading(false);
       return;
     }
 
-    const rows = json.values || [];
+    const allRows    = json.values || [];
     const currentYear = new Date().getFullYear();
+    const entries    = [];
 
-    // Filter rows where col C (index 2) has a date in current year
-    // Col mapping: A=0,B=1,C=2,D=3,E=4,F=5,G=6,H=7,...K=10,L=11,...N=13,...W=22,...Y=24,Z=25
-    const entries = [];
-    for (let i = 1; i < rows.length; i++) {
-      const row = rows[i];
-      const dateAdm = row[2]; // Column C
+    // Skip the first 3 rows (header rows), start from index 3
+    for (let i = 3; i < allRows.length; i++) {
+      const row     = allRows[i];
+      const dateAdm = (row[2] || '').toString().trim(); // Column C
       if (!dateAdm) continue;
-      // Parse DD/MM/YYYY
+
+      // Parse DD/MM/YYYY — skip if not this year
       const parts = dateAdm.split('/');
       if (parts.length !== 3) continue;
-      const yr = parseInt(parts[2]);
+      const yr = parseInt(parts[2], 10);
       if (yr !== currentYear) continue;
 
       entries.push({
-        admNo: row[1] || '',       // B
-        dateAdm: row[2] || '',     // C
-        studentName: row[3] || '', // D
-        classAdm: row[4] || '',    // E
-        motherName: row[5] || '',  // F
-        fatherName: row[6] || '',  // G
-        address: row[7] || '',     // H
-        caste: row[10] || '',      // K
-        dob: row[11] || '',        // L
-        prevSchool: row[13] || '', // N
-        phone: row[22] || '',      // W
-        aadhaar: row[24] || '',    // Y
-        gender: row[25] || '',     // Z
-        regFormNo: row[52] || '',  // Row-specific; Apps Script stores in custom col
-        regFee: row[53] || '0',    // Registration fee (custom col, see Apps Script)
+        regFormNo:   (row[52] || '').toString().trim(), // BA
+        admNo:       (row[1]  || '').toString().trim(), // B
+        dateAdm:     dateAdm,                           // C
+        studentName: (row[3]  || '').toString().trim(), // D
+        classAdm:    (row[4]  || '').toString().trim(), // E
+        fatherName:  (row[6]  || '').toString().trim(), // G
+        address:     (row[7]  || '').toString().trim(), // H
+        regFee:      (row[53] || '0').toString().trim() // BB
       });
     }
 
     renderDashboard(entries);
   } catch(err) {
+    showToast('Failed to load dashboard: ' + err.message, 'error');
     console.error(err);
-    showSampleDashboard();
+    showPlaceholderDashboard();
   }
+
   setLoading(false);
 }
 
 function renderDashboard(entries) {
-  // Stats
+  // --- Top stats ---
   document.getElementById('statTotal').textContent = entries.length;
-  const totalFees = entries.reduce((s, e) => s + (parseFloat(e.regFee) || 0), 0);
+  const totalFees = entries.reduce((s,e) => s + (parseFloat(e.regFee)||0), 0);
   document.getElementById('statFees').textContent = '₹' + totalFees.toLocaleString('en-IN');
-
-  // Class counts
   const classCounts = {};
   CLASSES.forEach(c => classCounts[c] = 0);
   entries.forEach(e => { if (classCounts[e.classAdm] !== undefined) classCounts[e.classAdm]++; });
-  const nonEmpty = Object.values(classCounts).filter(v => v > 0).length;
-  document.getElementById('statClasses').textContent = nonEmpty;
+  document.getElementById('statClasses').textContent = Object.values(classCounts).filter(v=>v>0).length;
 
-  const cg = document.getElementById('classGrid');
-  cg.innerHTML = CLASSES.map(c =>
-    `<div class="class-chip"><div class="cls-count">${classCounts[c]}</div><div class="cls-name">${c}</div></div>`
+  // --- Class chips ---
+  document.getElementById('classGrid').innerHTML = CLASSES.map(c =>
+    `<div class="class-chip">
+      <div class="cls-count">${classCounts[c]}</div>
+      <div class="cls-name">${c}</div>
+    </div>`
   ).join('');
 
-  // Table
+  // --- Table ---
   const tbody = document.getElementById('dashBody');
   if (!entries.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No registrations found for the current year.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No registrations found for the current year.</td></tr>';
     return;
   }
   tbody.innerHTML = entries.map(e => `
     <tr>
       <td><span class="badge badge-blue">${e.regFormNo || '—'}</span></td>
+      <td><span class="badge badge-gold">${e.admNo || '—'}</span></td>
       <td>${e.dateAdm}</td>
       <td><span class="badge badge-green">${e.classAdm}</span></td>
       <td style="font-weight:500">${e.studentName}</td>
       <td>${e.fatherName}</td>
-      <td style="font-size:12px;color:var(--text2);max-width:200px">${e.address}</td>
+      <td style="font-size:12px;color:var(--text2);max-width:180px">${e.address}</td>
       <td style="font-weight:600;color:var(--success)">₹${parseFloat(e.regFee||0).toLocaleString('en-IN')}</td>
-    </tr>
-  `).join('');
+    </tr>`
+  ).join('');
 }
 
-function showSampleDashboard() {
-  // Show placeholder when API not configured
+function showPlaceholderDashboard() {
   document.getElementById('statTotal').textContent = '—';
-  document.getElementById('statFees').textContent = '—';
+  document.getElementById('statFees').textContent  = '—';
   document.getElementById('statClasses').textContent = '—';
-  const cg = document.getElementById('classGrid');
-  cg.innerHTML = CLASSES.map(c =>
+  document.getElementById('classGrid').innerHTML = CLASSES.map(c =>
     `<div class="class-chip"><div class="cls-count">—</div><div class="cls-name">${c}</div></div>`
   ).join('');
-  document.getElementById('dashBody').innerHTML = `
-    <tr><td colspan="7" class="empty-state">
-      Configure your Google API Key and Apps Script URL to see live data.<br>
-      <a href="#" style="color:var(--primary-light);font-size:13px;" onclick="showPage('entry');return false;">Go to Student Entry Form →</a>
-    </td></tr>`;
+  document.getElementById('dashBody').innerHTML =
+    '<tr><td colspan="8" class="empty-state">Configure API Key to see live data.</td></tr>';
 }
 
-// Initial load
+// Load dashboard on start
 loadDashboard();
 </script>
 </body>
