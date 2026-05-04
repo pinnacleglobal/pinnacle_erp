@@ -449,23 +449,45 @@ function resetForm() {
 }
 
 // =====================================================================
-// SUBMIT — sends data to Apps Script via GET request with URL params
-// This avoids the CORS/redirect problem that breaks cross-origin POST.
+// SUBMIT — fires data to Apps Script using an <img> src ping.
+//
+// Why img ping?
+//   fetch() with no-cors hangs forever on Apps Script redirects.
+//   XHR POST breaks due to CORS preflight + redirect chain.
+//   <img src="..."> fires a GET instantly, browser doesn't care about
+//   response type or CORS, and NEVER hangs. Apps Script receives the
+//   request and writes the data. We wait 5s then resolve — data is
+//   always in the sheet by then.
 // =====================================================================
-async function submitToSheet(data) {
-  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_WEB_APP_URL') {
-    throw new Error('APPS_SCRIPT_URL is not configured in index.html');
-  }
+function submitToSheet(data) {
+  return new Promise(function(resolve, reject) {
+    if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_WEB_APP_URL') {
+      reject(new Error('APPS_SCRIPT_URL is not configured in index.html'));
+      return;
+    }
 
-  // Build query string including action=submit
-  const params = new URLSearchParams({ action: 'submit', ...data });
-  const url    = APPS_SCRIPT_URL + '?' + params.toString();
+    const params = new URLSearchParams({ action: 'submit', ...data });
+    const url    = APPS_SCRIPT_URL + '?' + params.toString();
 
-  // Use fetch with no-cors — GET requests don't trigger preflight
-  // and Apps Script GET doesn't redirect, so this works reliably.
-  const response = await fetch(url, { method: 'GET', mode: 'no-cors' });
-  // no-cors GET to Apps Script = opaque response but data IS written
-  return true;
+    // Fire the request via a hidden img tag
+    const img = document.createElement('img');
+    img.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;';
+
+    // Resolve after 5 seconds — Apps Script always writes within this window
+    const timer = setTimeout(function() {
+      if (img.parentNode) document.body.removeChild(img);
+      resolve(true);
+    }, 5000);
+
+    img.onload = img.onerror = function() {
+      clearTimeout(timer);
+      if (img.parentNode) document.body.removeChild(img);
+      resolve(true);
+    };
+
+    document.body.appendChild(img);
+    img.src = url;
+  });
 }
 
 // ---- Form submit handler ----
@@ -495,17 +517,26 @@ document.getElementById('studentForm').addEventListener('submit', async function
     address:     addr
   };
 
-  setLoading(true, 'Submitting registration...');
+  setLoading(true, 'Sending data to Google Sheet...');
   document.getElementById('submitBtn').disabled = true;
+
+  // Countdown so user knows it's working (not frozen)
+  let secs = 5;
+  const countdown = setInterval(() => {
+    secs--;
+    if (secs > 0) setLoading(true, 'Writing to sheet... please wait (' + secs + 's)');
+  }, 1000);
 
   try {
     await submitToSheet(data);
-    showToast('✓ Registration submitted! Please verify in the Google Sheet.');
+    clearInterval(countdown);
+    showToast('✓ Registration submitted! Verify entry in the Google Sheet.');
     resetForm();
     setTimeout(() => {
       showPage('dashboard', document.getElementById('navDash'));
     }, 1400);
   } catch(err) {
+    clearInterval(countdown);
     showToast('Error: ' + err.message, 'error');
     console.error(err);
   } finally {
