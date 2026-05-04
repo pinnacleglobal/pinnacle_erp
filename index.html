@@ -315,10 +315,10 @@
 // CONFIGURATION — REPLACE THESE TWO VALUES BEFORE DEPLOYING
 // =====================================================================
 // 1. Deploy Code.gs as a Web App in Google Apps Script and paste the URL here:
-const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_WEB_APP_URL';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcH55TS0TNbnCwNq9m9HLCrJJg88kBoE1iEBAHtEblKSfisnGRxw7dIs-olx5hMFyq0Q/exec';
 
 // 2. Paste your Google Sheets API Key here (sheet must be publicly viewable):
-const API_KEY = 'YOUR_GOOGLE_SHEETS_API_KEY';
+const API_KEY = 'AIzaSyB5VIy4kIySW7bVrjNYMpL5rkqZ7Oe758E';
 // =====================================================================
 
 const SHEET_ID   = '1OGjVUEvD-vWJ73vANmjbNFezvXplhkTS5sSx3jDE5cI';
@@ -453,7 +453,7 @@ function resetForm() {
 // This avoids the CORS/redirect problem that breaks cross-origin POST.
 // =====================================================================
 async function submitToSheet(data) {
-  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_WEB_APP_URL') {
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbxcH55TS0TNbnCwNq9m9HLCrJJg88kBoE1iEBAHtEblKSfisnGRxw7dIs-olx5hMFyq0Q/exec') {
     throw new Error('APPS_SCRIPT_URL is not configured in index.html');
   }
 
@@ -528,7 +528,7 @@ document.getElementById('studentForm').addEventListener('submit', async function
 async function loadDashboard() {
   setLoading(true, 'Loading dashboard...');
 
-  if (!API_KEY || API_KEY === 'YOUR_GOOGLE_SHEETS_API_KEY') {
+  if (!API_KEY || API_KEY === 'AIzaSyB5VIy4kIySW7bVrjNYMpL5rkqZ7Oe758E') {
     document.getElementById('configNotice').classList.add('show');
     showPlaceholderDashboard();
     setLoading(false);
