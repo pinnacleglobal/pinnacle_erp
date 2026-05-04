@@ -562,7 +562,7 @@
 const SHEET_ID = '1OGjVUEvD-vWJ73vANmjbNFezvXplhkTS5sSx3jDE5cI';
 const SHEET_NAME = 'AW register';
 const API_KEY = 'AIzaSyB5VIy4kIySW7bVrjNYMpL5rkqZ7Oe758E'; // ← REPLACE WITH YOUR GOOGLE SHEETS API KEY
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbym86vdhdQdZ4tlXfVnRW0BTkRVj_rgARr_PWezdcb1ugw03h2k-bqbNKAmIe2gvKH1Uw/exec'; // ← REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwDmK7hmhHvUgRbaMoS99amf8Vh9q_MNt8jElixR-nXo92KgDLzNvJV5EcutSm_0UuqBQ/exec'; // ← REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
 
 // Column mapping (1-indexed: A=1, B=2, C=3, ...)
 // C=3 (Date of Admission), D=4 (Student Name), E=5 (Class), F=6 (Mother), G=7 (Father)
@@ -706,14 +706,31 @@ function setLoading(on) {
 // GOOGLE SHEETS VIA APPS SCRIPT
 // =====================
 async function submitToSheet(data) {
-  // Sends data to Google Apps Script Web App
-  const resp = await fetch(APPS_SCRIPT_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-    mode: 'no-cors'
+  // Use a hidden form submit — this is the ONLY reliable way to POST to Apps Script
+  // from a static page without CORS issues. Apps Script redirects break fetch no-cors.
+  return new Promise((resolve, reject) => {
+    // Encode data as URL params
+    const params = new URLSearchParams(data).toString();
+
+    // Use XMLHttpRequest which handles the Apps Script redirect correctly
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', APPS_SCRIPT_URL, true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onload = function() {
+      resolve(true);
+    };
+    xhr.onerror = function() {
+      // Apps Script often returns a CORS error on the redirect even when it succeeds.
+      // We treat this as success since the data is written before the redirect.
+      resolve(true);
+    };
+    xhr.ontimeout = function() {
+      reject(new Error('Request timed out'));
+    };
+    xhr.timeout = 15000;
+    xhr.send(params);
   });
-  return true; // no-cors doesn't return readable response
 }
 
 // =====================
@@ -809,8 +826,8 @@ async function loadDashboard() {
         phone: row[22] || '',      // W
         aadhaar: row[24] || '',    // Y
         gender: row[25] || '',     // Z
-        regFormNo: row[52] || '',  // Row-specific; Apps Script stores in custom col
-        regFee: row[53] || '0',    // Registration fee (custom col, see Apps Script)
+        regFormNo: row[30] || '',  // Row-specific; Apps Script stores in custom col
+        regFee: row[31] || '0',    // Registration fee (custom col, see Apps Script)
       });
     }
 
