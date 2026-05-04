@@ -4,138 +4,77 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pinnacle Global School - ERP Portal</title>
-    <!-- Logo as Favicon -->
     <link rel="icon" type="image/png" href="logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --navy: #0d2156;
-            --gold: #c9a227;
-            --gold-light: #f0c84a;
-            --blue: #1a3a8f;
-            --blue-light: #2451b3;
-            --cream: #fdf8ee;
-            --white: #ffffff;
-            --gray-50: #f8f9fc;
-            --gray-100: #eef0f7;
-            --gray-200: #d5d9e8;
-            --gray-400: #8891b0;
-            --gray-600: #4a5380;
-            --gray-800: #1e2444;
-            --success: #1a7a4a;
-            --danger: #b91c1c;
-            --warning: #b45309;
+            --navy: #0d2156; --gold: #c9a227; --gold-light: #f0c84a;
+            --blue: #1a3a8f; --blue-light: #2451b3; --cream: #fdf8ee;
+            --white: #ffffff; --gray-50: #f8f9fc; --gray-100: #eef0f7;
+            --gray-200: #d5d9e8; --gray-400: #8891b0; --gray-600: #4a5380;
+            --gray-800: #1e2444; --success: #1a7a4a; --danger: #b91c1c;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: "Source Sans 3", sans-serif; background: var(--gray-50); color: var(--gray-800); min-height: 100vh; display: flex; flex-direction: column; }
+        body { font-family: "Source Sans 3", sans-serif; background: var(--gray-50); color: var(--gray-800); }
 
         .header { 
             background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%); 
-            color: white; 
-            padding: 0 2rem; 
-            display: flex; 
-            align-items: center; 
-            gap: 1.5rem; 
-            height: 80px; 
-            box-shadow: 0 4px 20px rgba(13,33,86,0.4); 
-            position: fixed; 
-            width: 100%; 
-            top: 0; 
-            z-index: 100; 
+            color: white; padding: 0 2rem; display: flex; align-items: center; 
+            gap: 1.5rem; height: 80px; position: fixed; width: 100%; top: 0; z-index: 100; 
         }
 
-        .header-logo { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--gold); object-fit: cover; }
-        .header-title { flex: 1; }
-        .header-title h1 { font-family: "Playfair Display", serif; font-size: 1.4rem; font-weight: 700; }
-        .header-title p { font-size: 0.75rem; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.1em; }
+        .header-logo { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--gold); }
+        .header-title h1 { font-family: "Playfair Display", serif; font-size: 1.4rem; }
+        .header-title p { font-size: 0.75rem; color: var(--gold-light); text-transform: uppercase; }
 
         .layout { display: flex; margin-top: 80px; min-height: calc(100vh - 80px); }
 
         .sidebar { 
-            width: 260px; 
-            background: var(--navy); 
-            color: white; 
-            padding: 1.5rem 0; 
-            flex-shrink: 0; 
-            position: fixed; 
-            top: 80px; 
-            bottom: 0; 
-            overflow-y: auto; 
-            border-right: 1px solid rgba(255,255,255,0.1);
+            width: 260px; background: var(--navy); color: white; padding: 1.5rem 0; 
+            position: fixed; top: 80px; bottom: 0; border-right: 1px solid rgba(255,255,255,0.1);
         }
 
-        .sidebar-branding {
-            text-align: center;
-            padding: 1rem 0 2rem 0;
-            border-bottom: 1px solid rgba(201,162,39,0.2);
-            margin-bottom: 1.5rem;
-        }
+        .sidebar-branding { text-align: center; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(201,162,39,0.2); margin-bottom: 1rem; }
+        .sidebar-logo { width: 70px; border-radius: 50%; border: 2px solid var(--gold); margin-bottom: 10px; }
 
-        .sidebar-logo { width: 80px; margin-bottom: 10px; border-radius: 50%; border: 2px solid var(--gold); }
-        .sidebar-school-name { font-size: 0.75rem; color: var(--gold-light); font-weight: 600; text-transform: uppercase; }
-
-        .nav-section { padding: 0 1rem; }
-        .nav-section-label { font-size: 0.65rem; color: var(--gold); padding: 0.5rem 0.75rem; text-transform: uppercase; font-weight: 700; }
-        
         .nav-item { 
-            display: flex; align-items: center; gap: 12px; padding: 0.8rem 1rem; 
-            border-radius: 8px; cursor: pointer; font-size: 0.9rem; color: rgba(255,255,255,0.7); 
-            transition: 0.2s; margin-bottom: 4px; 
+            display: flex; align-items: center; padding: 1rem 1.5rem; cursor: pointer; 
+            font-size: 0.95rem; color: rgba(255,255,255,0.7); transition: 0.2s; 
         }
-
-        .nav-item:hover, .nav-item.active { background: rgba(201,162,39,0.15); color: var(--gold-light); }
-        .nav-item.active { border-left: 4px solid var(--gold); font-weight: 600; }
+        .nav-item:hover, .nav-item.active { background: rgba(201,162,39,0.15); color: var(--gold-light); border-left: 4px solid var(--gold); }
 
         .main { margin-left: 260px; flex: 1; padding: 2.5rem; }
         .page { display: none; }
-        .page.active { display: block; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .page.active { display: block; }
 
-        .card { background: white; border-radius: 12px; border: 1px solid var(--gray-200); padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--gray-100); }
-        .card-title { font-family: "Playfair Display", serif; font-size: 1.2rem; color: var(--navy); font-weight: 700; }
+        .card { background: white; border-radius: 12px; border: 1px solid var(--gray-200); padding: 2rem; margin-bottom: 2rem; }
+        .card-title { font-family: "Playfair Display", serif; font-size: 1.3rem; color: var(--navy); margin-bottom: 1.5rem; display: block; border-bottom: 1px solid var(--gray-100); padding-bottom: 0.5rem; }
 
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
-        .stat-card { background: white; border-radius: 12px; border: 1px solid var(--gray-200); padding: 1.5rem; position: relative; }
-        .stat-icon { position: absolute; right: 1.5rem; top: 1.5rem; width: 45px; height: 45px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+        .stat-card { background: white; border-radius: 12px; border: 1px solid var(--gray-200); padding: 1.5rem; text-align: center; }
+        .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--navy); display: block; }
+        .stat-label { font-size: 0.8rem; color: var(--gray-400); text-transform: uppercase; }
 
-        /* Form Design Fix */
-        .form-container { max-width: 1000px; margin: 0 auto; }
-        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
-        .form-group { display: flex; flex-direction: column; gap: 8px; }
-        .form-group.full-width { grid-column: span 2; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .full-width { grid-column: span 2; }
         
-        input, select { 
-            padding: 0.75rem 1rem; border: 1.5px solid var(--gray-200); border-radius: 8px; 
-            font-size: 0.95rem; outline: none; transition: 0.2s; 
-        }
-        input:focus, select:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(13,33,86,0.05); }
+        label { font-size: 0.85rem; font-weight: 600; color: var(--gray-600); }
+        input, select { padding: 0.8rem; border: 1.5px solid var(--gray-200); border-radius: 8px; outline: none; }
+        input:focus { border-color: var(--blue); }
 
-        .btn { 
-            padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; 
-            border: none; display: inline-flex; align-items: center; gap: 10px; transition: 0.3s; 
-        }
+        .btn { padding: 0.8rem 2rem; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; }
         .btn-primary { background: var(--navy); color: white; }
-        .btn-primary:hover { background: var(--blue); transform: translateY(-2px); }
+        
+        .table-wrapper { overflow-x: auto; margin-top: 1rem; border-radius: 8px; border: 1px solid var(--gray-200); }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th { background: var(--gray-50); padding: 1rem; text-align: left; font-size: 0.8rem; color: var(--gray-600); border-bottom: 2px solid var(--gray-200); }
+        td { padding: 1rem; border-bottom: 1px solid var(--gray-100); font-size: 0.9rem; }
 
-        .table-wrapper { overflow-x: auto; border: 1px solid var(--gray-200); border-radius: 10px; }
-        table { width: 100%; border-collapse: collapse; background: white; }
-        th { background: var(--gray-50); padding: 1rem; text-align: left; font-size: 0.75rem; text-transform: uppercase; color: var(--gray-600); }
-        td { padding: 1rem; border-top: 1px solid var(--gray-100); font-size: 0.9rem; }
-
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: none; padding: 2rem; overflow-y: auto; }
-        .modal-overlay.open { display: flex; align-items: center; justify-content: center; }
-        .modal { background: white; border-radius: 15px; width: 100%; max-width: 1100px; padding: 2rem; }
-
-        .toast { position: fixed; bottom: 2rem; right: 2rem; padding: 1rem 2rem; border-radius: 10px; color: white; z-index: 2000; display: none; }
-        .toast.success { background: var(--success); }
-        .toast.error { background: var(--danger); }
-        .toast.show { display: block; animation: slideUp 0.3s ease; }
-
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-        .footer { margin-left: 260px; padding: 2rem; text-align: center; color: var(--gray-400); font-size: 0.8rem; }
+        .toast { position: fixed; bottom: 2rem; right: 2rem; padding: 1rem 2rem; border-radius: 8px; color: white; display: none; z-index: 1000; }
+        .show { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -146,265 +85,91 @@
         <h1>Pinnacle Global School</h1>
         <p>Tradition | Innovation | Excellence</p>
     </div>
-    <div class="header-badge">ERP Portal v2.5</div>
 </header>
 
 <div class="layout">
     <aside class="sidebar">
         <div class="sidebar-branding">
             <img src="logo.png" alt="Logo" class="sidebar-logo">
-            <p class="sidebar-school-name">ERP Management</p>
         </div>
-        <nav class="nav-section">
-            <div class="nav-section-label">Main Menu</div>
-            <div class="nav-item active" onclick="showPage('dashboard',this)">
-                Dashboard
-            </div>
-            <div class="nav-item" onclick="showPage('entry',this)">
-                Student Data Entry
-            </div>
-            <div class="nav-item" onclick="showPage('edit',this)">
-                Edit Student Records
-            </div>
-        </nav>
+        <div class="nav-item active" onclick="showPage('dashboard',this)">Dashboard</div>
+        <div class="nav-item" onclick="showPage('entry',this)">Data Entry</div>
+        <div class="nav-item" onclick="showPage('edit',this)">Edit Records</div>
     </aside>
 
     <main class="main">
-        <!-- DASHBOARD -->
         <div id="page-dashboard" class="page active">
-            <div class="card-header" style="border:none; margin-bottom: 2rem;">
-                <h2 style="font-family:'Playfair Display'; color:var(--navy);">Dashboard Overview</h2>
-            </div>
-            
             <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-label">Total Students</div>
-                    <div class="stat-value" id="statTotal">0</div>
-                    <div class="stat-icon" style="background:#e8f0fe;">📊</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">This Month</div>
-                    <div class="stat-value" id="statMonth">0</div>
-                    <div class="stat-icon" style="background:#fef9e7;">📅</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Fees Collected</div>
-                    <div class="stat-value" id="statFees">₹ 0</div>
-                    <div class="stat-icon" style="background:#e8f5e9;">💰</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Today's Admission</div>
-                    <div class="stat-value" id="statToday">0</div>
-                    <div class="stat-icon" style="background:#fde8e8;">⭐</div>
-                </div>
+                <div class="stat-card"><span class="stat-label">Total</span><span class="stat-value" id="statTotal">0</span></div>
+                <div class="stat-card"><span class="stat-label">Month</span><span class="stat-value" id="statMonth">0</span></div>
+                <div class="stat-card"><span class="stat-label">Fees</span><span class="stat-value" id="statFees">0</span></div>
+                <div class="stat-card"><span class="stat-label">Today</span><span class="stat-value" id="statToday">0</span></div>
             </div>
-
             <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Recent Admissions</span>
-                    <button class="btn btn-primary btn-sm" onclick="loadDashboard()">Refresh</button>
-                </div>
+                <span class="card-title">Recent Admissions</span>
                 <div class="table-wrapper">
                     <table>
-                        <thead>
-                            <tr>
-                                <th>Adm. No.</th>
-                                <th>Student Name</th>
-                                <th>Father Name</th>
-                                <th>Class</th>
-                                <th>Admission Date</th>
-                                <th>Phone</th>
-                            </tr>
-                        </thead>
-                        <tbody id="dashBody">
-                            <tr><td colspan="6" style="text-align:center;">Loading records...</td></tr>
-                        </tbody>
+                        <thead><tr><th>Adm No</th><th>Student Name</th><th>Father</th><th>Class</th><th>Date</th></tr></thead>
+                        <tbody id="dashBody"></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- ENTRY PAGE -->
         <div id="page-entry" class="page">
-            <div class="form-container">
-                <div class="admission-banner" id="admBanner" style="display:none; background:var(--navy); color:var(--gold-light); padding:1.5rem; border-radius:10px; margin-bottom:2rem;">
-                    <h3>Admission Successful!</h3>
-                    <p>Generated Admission Number: <strong id="admNumber" style="font-size:1.5rem;">---</strong></p>
+            <div class="card">
+                <span class="card-title">Student Registration Form</span>
+                <div class="admission-banner" id="admBanner" style="display:none; background:var(--cream); padding:1rem; border:1px solid var(--gold); border-radius:8px; margin-bottom:1rem; color:var(--navy);">
+                    Registration Successful! Admission No: <strong id="admNumber"></strong>
                 </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-title">New Student Admission Form</span>
-                    </div>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Registration Form No. <span style="color:red;">*</span></label>
-                            <input type="text" id="f_regNo" placeholder="REG-2024-XXX">
-                        </div>
-                        <div class="form-group">
-                            <label>Student Full Name <span style="color:red;">*</span></label>
-                            <input type="text" id="f_name">
-                        </div>
-                        <div class="form-group">
-                            <label>Mother's Name <span style="color:red;">*</span></label>
-                            <input type="text" id="f_mother">
-                        </div>
-                        <div class="form-group">
-                            <label>Father's Name <span style="color:red;">*</span></label>
-                            <input type="text" id="f_father">
-                        </div>
-                        <div class="form-group">
-                            <label>Class of Admission <span style="color:red;">*</span></label>
-                            <select id="f_class">
-                                <option value="">Select Class</option>
-                                <option>Nursery</option><option>LKG</option><option>UKG</option>
-                                <option>1st</option><option>2nd</option><option>3rd</option><option>4th</option>
-                                <option>5th</option><option>6th</option><option>7th</option><option>8th</option>
-                                <option>9th</option><option>10th</option><option>11th</option><option>12th</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Date of Birth <span style="color:red;">*</span></label>
-                            <input type="text" id="f_dob" placeholder="DD/MM/YYYY">
-                        </div>
-                        <div class="form-group">
-                            <label>Phone Number <span style="color:red;">*</span></label>
-                            <input type="tel" id="f_phone" maxlength="10">
-                        </div>
-                        <div class="form-group">
-                            <label>Date of Admission <span style="color:red;">*</span></label>
-                            <input type="text" id="f_doa" placeholder="DD/MM/YYYY">
-                        </div>
-                        <div class="form-group">
-                            <label>Caste <span style="color:red;">*</span></label>
-                            <select id="f_caste">
-                                <option value="">Select Caste</option>
-                                <option>General</option><option>OBC</option><option>SC</option><option>ST</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Gender <span style="color:red;">*</span></label>
-                            <select id="f_gender">
-                                <option value="">Select Gender</option>
-                                <option>Male</option><option>Female</option><option>Other</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Aadhaar Number</label>
-                            <input type="text" id="f_aadhaar" maxlength="12">
-                        </div>
-                        <div class="form-group">
-                            <label>Registration Fee (₹)</label>
-                            <input type="number" id="f_fee">
-                        </div>
-                        <div class="form-group full-width">
-                            <label>Address <span style="color:red;">*</span></label>
-                            <select id="f_address"><option value="">Loading addresses...</option></select>
-                        </div>
-                        <div class="form-group full-width">
-                            <label>Previous School Name</label>
-                            <input type="text" id="f_prevSchool">
-                        </div>
-                    </div>
-                    <div class="form-actions">
-                        <button class="btn btn-primary" id="submitBtn" onclick="submitEntry()">Submit Admission</button>
-                        <button class="btn btn-outline" onclick="clearForm()">Clear</button>
-                    </div>
+                <div class="form-grid">
+                    <div class="form-group"><label>Reg Form No*</label><input type="text" id="f_regNo"></div>
+                    <div class="form-group"><label>Student Name*</label><input type="text" id="f_name"></div>
+                    <div class="form-group"><label>Mother's Name*</label><input type="text" id="f_mother"></div>
+                    <div class="form-group"><label>Father's Name*</label><input type="text" id="f_father"></div>
+                    <div class="form-group"><label>Class*</label><select id="f_class">
+                        <option value="">Select</option><option>Nursery</option><option>LKG</option><option>UKG</option>
+                        <option>1st</option><option>2nd</option><option>3rd</option><option>4th</option>
+                        <option>5th</option><option>6th</option><option>7th</option><option>8th</option>
+                        <option>9th</option><option>10th</option><option>11th</option><option>12th</option>
+                    </select></div>
+                    <div class="form-group"><label>DOB*</label><input type="text" id="f_dob" placeholder="DD/MM/YYYY"></div>
+                    <div class="form-group"><label>Phone*</label><input type="tel" id="f_phone" maxlength="10"></div>
+                    <div class="form-group"><label>Admission Date*</label><input type="text" id="f_doa" placeholder="DD/MM/YYYY"></div>
+                    <div class="form-group"><label>Caste*</label><select id="f_caste"><option>General</option><option>OBC</option><option>SC</option><option>ST</option></select></div>
+                    <div class="form-group"><label>Gender*</label><select id="f_gender"><option>Male</option><option>Female</option></select></div>
+                    <div class="form-group"><label>Aadhaar</label><input type="text" id="f_aadhaar" maxlength="12"></div>
+                    <div class="form-group"><label>Fee (₹)</label><input type="number" id="f_fee"></div>
+                    <div class="form-group full-width"><label>Address*</label><select id="f_address"><option value="">Loading...</option></select></div>
                 </div>
+                <div style="margin-top:2rem;"><button class="btn btn-primary" id="submitBtn" onclick="submitEntry()">Submit Admission</button></div>
             </div>
         </div>
 
-        <!-- EDIT PAGE -->
         <div id="page-edit" class="page">
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Master Student Register</span>
-                    <input type="text" id="editSearch" placeholder="Quick search..." oninput="filterEdit()" style="width:300px; padding:0.5rem;">
-                </div>
-                <div class="edit-wrap" id="editWrap">
-                    <p style="padding:2rem; text-align:center;">Load student data to begin editing.</p>
-                </div>
-            </div>
+            <div class="card"><span class="card-title">Master Register</span><div id="editWrap" class="table-wrapper"></div></div>
         </div>
     </main>
-</div>
-
-<footer class="footer">
-    <strong>Pinnacle Global School</strong> &copy; 2026 ERP Management System
-</footer>
-
-<!-- MODAL -->
-<div class="modal-overlay" id="editModal">
-    <div class="modal">
-        <div class="card-header">
-            <h3 class="modal-title">Edit Student Record</h3>
-            <button onclick="closeModal()" style="border:none; background:none; cursor:pointer; font-size:1.5rem;">&times;</button>
-        </div>
-        <div id="modalContent" class="form-grid" style="max-height:60vh; overflow-y:auto; padding:1rem;"></div>
-        <div class="form-actions">
-            <button class="btn btn-primary" id="saveBtn" onclick="saveEdit()">Save Changes</button>
-            <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-        </div>
-    </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxtde4ywK0BKRDrFzIEkqW_-vTnrND77h6GVwHK0pohRxWMGkjwmyouvdaSQwK7lZmAsw/exec";
     const S1_ID = "1OGjVUEvD-vWJ73vANmjbNFezvXplhkTS5sSx3jDE5cI";
     const S1_AW_GID = "0";
     const S1_MK_GID = "1915083603";
-    const S2_ID = "1-GLk792iA3SHeH26JalYGcu0w_ESVvQyhkGvkWe6r3U";
-    const S2_TRIAL_GID = "1048925622";
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyNS0M5Fp9yZ6wn38xPlRElNGEzpCeRIm-xweGKfvmshCZVD1R4vv8DtLB4hVBAK2cidA/exec";
-
-    let allEditRows = [], editHeaders = [];
-
-    async function fetchCSV(sheetId, gid) {
-        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
-        try {
-            const res = await fetch(url);
-            const text = await res.text();
-            return parseCSV(text);
-        } catch(e) { return null; }
-    }
-
-    function parseCSV(text) {
-        const rows = [];
-        const lines = text.split("\n");
-        for (const line of lines) {
-            if (!line.trim()) continue;
-            const cols = [];
-            let cur = "", inQ = false;
-            for (let i = 0; i < line.length; i++) {
-                const ch = line[i];
-                if (ch === '"' && !inQ) inQ = true;
-                else if (ch === '"' && inQ) {
-                    if (line[i+1] === '"') { cur += '"'; i++; }
-                    else inQ = false;
-                } else if (ch === ',' && !inQ) { cols.push(cur); cur = ""; }
-                else cur += ch;
-            }
-            cols.push(cur); rows.push(cols);
-        }
-        return rows;
-    }
 
     function toast(msg, type="success") {
         const t = document.getElementById("toast");
-        t.textContent = msg;
-        t.className = "toast " + type + " show";
-        setTimeout(() => t.className = "toast", 4000);
+        t.textContent = msg; t.style.background = type === "success" ? "#1a7a4a" : "#b91c1c";
+        t.className = "toast show"; setTimeout(() => t.className = "toast", 3000);
     }
 
-    function setupDateInput(id) {
-        const el = document.getElementById(id);
-        el.addEventListener("input", function() {
-            let v = this.value.replace(/\D/g,"");
-            if (v.length > 2 && v.length <= 4) v = v.slice(0,2)+"/"+v.slice(2);
-            else if (v.length > 4) v = v.slice(0,2)+"/"+v.slice(2,4)+"/"+v.slice(4,8);
-            this.value = v;
-        });
+    async function fetchCSV(id, gid) {
+        const res = await fetch(`https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`);
+        const text = await res.text();
+        return text.split("\n").map(row => row.split(",").map(cell => cell.replace(/^"|"$/g, '')));
     }
 
     function showPage(name, el) {
@@ -412,99 +177,41 @@
         document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
         document.getElementById("page-"+name).classList.add("active");
         el.classList.add("active");
-        if (name==="dashboard") loadDashboard();
-        if (name==="edit") loadEditTable();
     }
 
     async function loadAddressDropdown() {
-        const sel = document.getElementById("f_address");
         const rows = await fetchCSV(S1_ID, S1_MK_GID);
-        if (!rows) { sel.innerHTML = '<option>Error loading</option>'; return; }
-        const addresses = [];
-        for (let i = 3; i < Math.min(rows.length, 54); i++) {
-            const val = rows[i][24] ? rows[i][24].trim() : "";
-            if (val) addresses.push(val);
-        }
-        sel.innerHTML = '<option value="">Select Address</option>' + 
+        const addresses = rows.slice(3, 54).map(r => r[24]).filter(a => a);
+        document.getElementById("f_address").innerHTML = '<option value="">Select Address</option>' + 
             addresses.map(a => `<option value="${a}">${a}</option>`).join("");
     }
 
     async function loadDashboard() {
         const rows = await fetchCSV(S1_ID, S1_AW_GID);
-        if (!rows) return;
-        const dataRows = rows.slice(1).filter(r => r[1] && r[1].trim());
-        document.getElementById("statTotal").textContent = dataRows.length;
-        
-        const recent = dataRows.slice(-10).reverse();
-        document.getElementById("dashBody").innerHTML = recent.map(r => `
-            <tr>
-                <td><strong>${r[1]}</strong></td>
-                <td>${r[3]}</td>
-                <td>${r[6]}</td>
-                <td>${r[4]}</td>
-                <td>${r[2]}</td>
-                <td>${r[22]}</td>
-            </tr>
-        `).join("");
+        const data = rows.slice(1).filter(r => r[1]);
+        document.getElementById("statTotal").textContent = data.length;
+        document.getElementById("dashBody").innerHTML = data.slice(-5).reverse().map(r => 
+            `<tr><td>${r[1]}</td><td>${r[3]}</td><td>${r[6]}</td><td>${r[4]}</td><td>${r[2]}</td></tr>`).join("");
     }
-
-    async function loadEditTable() {
-        document.getElementById("editWrap").innerHTML = '<p style="text-align:center;">Fetching Records...</p>';
-        const rows = await fetchCSV(S1_ID, S1_AW_GID);
-        if (!rows || rows.length < 4) return;
-        editHeaders = rows[0];
-        allEditRows = rows.slice(3).map((r, i) => ({ data: r, sheetRow: i + 4 }));
-        renderEditTable(allEditRows);
-    }
-
-    function renderEditTable(rows) {
-        let html = `<table><thead><tr><th>Action</th><th>Adm No</th><th>Name</th><th>Class</th><th>Father</th><th>Address</th></tr></thead><tbody>`;
-        rows.forEach(r => {
-            html += `<tr>
-                <td><button class="btn btn-primary btn-sm" onclick="openModal(${r.sheetRow})">Edit</button></td>
-                <td>${r.data[1]}</td><td>${r.data[3]}</td><td>${r.data[4]}</td><td>${r.data[6]}</td><td>${r.data[7]}</td>
-            </tr>`;
-        });
-        html += `</tbody></table>`;
-        document.getElementById("editWrap").innerHTML = html;
-    }
-
-    function openModal(sheetRow) {
-        const row = allEditRows.find(r => r.sheetRow === sheetRow);
-        currentSheetRow = sheetRow;
-        let html = "";
-        row.data.forEach((val, i) => {
-            if (i < 30) {
-                html += `<div class="form-group">
-                    <label>Col ${i+1}: ${editHeaders[i] || ''}</label>
-                    <input type="text" id="mc_${i}" value="${val}">
-                </div>`;
-            }
-        });
-        document.getElementById("modalContent").innerHTML = html;
-        document.getElementById("editModal").classList.add("open");
-    }
-
-    function closeModal() { document.getElementById("editModal").classList.remove("open"); }
 
     async function submitEntry() {
-        const get = id => document.getElementById(id);
         const data = {
-            regNo: get("f_regNo").value,
-            name: get("f_name").value,
-            mother: get("f_mother").value,
-            father: get("f_father").value,
-            address: get("f_address").value,
-            caste: get("f_caste").value,
-            gender: get("f_gender").value,
-            dob: get("f_dob").value,
-            aadhaar: get("f_aadhaar").value,
-            prevSchool: get("f_prevSchool").value,
-            phone: get("f_phone").value,
-            doa: get("f_doa").value,
-            cls: get("f_class").value,
-            fee: get("f_fee").value
+            regNo: document.getElementById("f_regNo").value,
+            name: document.getElementById("f_name").value,
+            mother: document.getElementById("f_mother").value,
+            father: document.getElementById("f_father").value,
+            address: document.getElementById("f_address").value,
+            cls: document.getElementById("f_class").value,
+            dob: document.getElementById("f_dob").value,
+            phone: document.getElementById("f_phone").value,
+            doa: document.getElementById("f_doa").value,
+            caste: document.getElementById("f_caste").value,
+            gender: document.getElementById("f_gender").value,
+            aadhaar: document.getElementById("f_aadhaar").value,
+            fee: document.getElementById("f_fee").value
         };
+
+        if (!data.name || !data.doa) return toast("Name and Date are required", "error");
 
         const btn = document.getElementById("submitBtn");
         btn.disabled = true; btn.textContent = "Processing...";
@@ -519,20 +226,13 @@
                 document.getElementById("admNumber").textContent = result.admissionNumber;
                 document.getElementById("admBanner").style.display = "block";
                 toast("Admission Successful");
-                clearForm();
+                loadDashboard();
             }
-        } catch(e) { toast("Error submitting", "error"); }
+        } catch(e) { toast("Error: " + e.message, "error"); }
         btn.disabled = false; btn.textContent = "Submit Admission";
     }
 
-    function clearForm() {
-        const fields = ["f_regNo","f_name","f_mother","f_father","f_dob","f_phone","f_doa","f_aadhaar","f_fee","f_prevSchool"];
-        fields.forEach(f => document.getElementById(f).value = "");
-    }
-
     document.addEventListener("DOMContentLoaded", () => {
-        setupDateInput("f_dob");
-        setupDateInput("f_doa");
         loadAddressDropdown();
         loadDashboard();
     });
