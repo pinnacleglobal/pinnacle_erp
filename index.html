@@ -1,241 +1,882 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pinnacle Global School - ERP Portal</title>
-    <link rel="icon" type="image/png" href="logo.png">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --navy: #0d2156; --gold: #c9a227; --gold-light: #f0c84a;
-            --blue: #1a3a8f; --blue-light: #2451b3; --cream: #fdf8ee;
-            --white: #ffffff; --gray-50: #f8f9fc; --gray-100: #eef0f7;
-            --gray-200: #d5d9e8; --gray-400: #8891b0; --gray-600: #4a5380;
-            --gray-800: #1e2444; --success: #1a7a4a; --danger: #b91c1c;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pinnacle Global School — ERP Portal</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: "Source Sans 3", sans-serif; background: var(--gray-50); color: var(--gray-800); }
+  :root {
+    --primary: #1a3a6b;
+    --primary-light: #2456a4;
+    --accent: #e8a020;
+    --accent-light: #f5c154;
+    --bg: #f0f3f8;
+    --surface: #ffffff;
+    --surface2: #f7f9fc;
+    --border: #dce3ef;
+    --text: #1a2540;
+    --text2: #4a5778;
+    --text3: #8090b0;
+    --success: #1a7a4a;
+    --success-bg: #e6f4ed;
+    --danger: #c0392b;
+    --danger-bg: #fcecea;
+    --radius: 10px;
+    --radius-lg: 16px;
+    --shadow: 0 2px 12px rgba(26,58,107,0.08);
+    --shadow-md: 0 4px 24px rgba(26,58,107,0.12);
+  }
 
-        .header { 
-            background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%); 
-            color: white; padding: 0 2rem; display: flex; align-items: center; 
-            gap: 1.5rem; height: 80px; position: fixed; width: 100%; top: 0; z-index: 100; 
-        }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
 
-        .header-logo { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--gold); }
-        .header-title h1 { font-family: "Playfair Display", serif; font-size: 1.4rem; }
-        .header-title p { font-size: 0.75rem; color: var(--gold-light); text-transform: uppercase; }
+  /* HEADER */
+  header {
+    background: var(--primary);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 32px;
+    height: 68px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  header img { height: 46px; width: 46px; object-fit: contain; border-radius: 8px; background: #fff; padding: 3px; }
+  .header-title { font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.01em; }
+  .header-sub { font-size: 11px; opacity: 0.7; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; }
+  header .spacer { flex: 1; }
 
-        .layout { display: flex; margin-top: 80px; min-height: calc(100vh - 80px); }
+  /* NAV */
+  nav {
+    background: var(--surface);
+    border-bottom: 1.5px solid var(--border);
+    display: flex;
+    padding: 0 32px;
+    gap: 4px;
+  }
+  .nav-btn {
+    padding: 14px 22px;
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.18s;
+    letter-spacing: 0.02em;
+  }
+  .nav-btn:hover { color: var(--primary); }
+  .nav-btn.active { color: var(--primary); border-bottom-color: var(--accent); font-weight: 600; }
 
-        .sidebar { 
-            width: 260px; background: var(--navy); color: white; padding: 1.5rem 0; 
-            position: fixed; top: 80px; bottom: 0; border-right: 1px solid rgba(255,255,255,0.1);
-        }
+  /* MAIN */
+  main { flex: 1; padding: 32px; max-width: 1300px; width: 100%; margin: 0 auto; }
 
-        .sidebar-branding { text-align: center; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(201,162,39,0.2); margin-bottom: 1rem; }
-        .sidebar-logo { width: 70px; border-radius: 50%; border: 2px solid var(--gold); margin-bottom: 10px; }
+  /* PAGE */
+  .page { display: none; }
+  .page.active { display: block; }
 
-        .nav-item { 
-            display: flex; align-items: center; padding: 1rem 1.5rem; cursor: pointer; 
-            font-size: 0.95rem; color: rgba(255,255,255,0.7); transition: 0.2s; 
-        }
-        .nav-item:hover, .nav-item.active { background: rgba(201,162,39,0.15); color: var(--gold-light); border-left: 4px solid var(--gold); }
+  /* DASHBOARD */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 20px 22px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--primary);
+  }
+  .stat-card.accent::before { background: var(--accent); }
+  .stat-card.green::before { background: #1a7a4a; }
+  .stat-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .stat-value { font-family: 'Sora', sans-serif; font-size: 32px; font-weight: 700; color: var(--primary); line-height: 1; }
+  .stat-card.accent .stat-value { color: #b07010; }
+  .stat-card.green .stat-value { color: var(--success); }
 
-        .main { margin-left: 260px; flex: 1; padding: 2.5rem; }
-        .page { display: none; }
-        .page.active { display: block; }
+  .section-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-        .card { background: white; border-radius: 12px; border: 1px solid var(--gray-200); padding: 2rem; margin-bottom: 2rem; }
-        .card-title { font-family: "Playfair Display", serif; font-size: 1.3rem; color: var(--navy); margin-bottom: 1.5rem; display: block; border-bottom: 1px solid var(--gray-100); padding-bottom: 0.5rem; }
+  .class-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .class-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 10px;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .class-chip .cls-name { font-size: 11px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+  .class-chip .cls-count { font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 700; color: var(--primary-light); }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
-        .stat-card { background: white; border-radius: 12px; border: 1px solid var(--gray-200); padding: 1.5rem; text-align: center; }
-        .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--navy); display: block; }
-        .stat-label { font-size: 0.8rem; color: var(--gray-400); text-transform: uppercase; }
+  /* TABLE */
+  .table-wrap { background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow); border: 1px solid var(--border); overflow: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead { background: var(--primary); }
+  thead th { color: #fff; padding: 13px 14px; font-family: 'Sora', sans-serif; font-weight: 500; text-align: left; font-size: 12px; letter-spacing: 0.04em; white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody td { padding: 12px 14px; color: var(--text); vertical-align: middle; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-blue { background: #e6edf8; color: var(--primary); }
+  .badge-green { background: var(--success-bg); color: var(--success); }
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--text3); font-size: 14px; }
 
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-        .form-group { display: flex; flex-direction: column; gap: 6px; }
-        .full-width { grid-column: span 2; }
-        
-        label { font-size: 0.85rem; font-weight: 600; color: var(--gray-600); }
-        input, select { padding: 0.8rem; border: 1.5px solid var(--gray-200); border-radius: 8px; outline: none; }
-        input:focus { border-color: var(--blue); }
+  /* FORM PAGE */
+  .form-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .form-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    padding: 24px 32px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .form-header img { height: 48px; width: 48px; object-fit: contain; background: rgba(255,255,255,0.15); border-radius: 10px; padding: 4px; }
+  .form-header-text h2 { font-family: 'Sora', sans-serif; font-size: 17px; font-weight: 700; }
+  .form-header-text p { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+  .form-body { padding: 32px; }
 
-        .btn { padding: 0.8rem 2rem; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; }
-        .btn-primary { background: var(--navy); color: white; }
-        
-        .table-wrapper { overflow-x: auto; margin-top: 1rem; border-radius: 8px; border: 1px solid var(--gray-200); }
-        table { width: 100%; border-collapse: collapse; min-width: 800px; }
-        th { background: var(--gray-50); padding: 1rem; text-align: left; font-size: 0.8rem; color: var(--gray-600); border-bottom: 2px solid var(--gray-200); }
-        td { padding: 1rem; border-bottom: 1px solid var(--gray-100); font-size: 0.9rem; }
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 28px;
+  }
+  @media (max-width: 700px) { .form-grid { grid-template-columns: 1fr; } }
+  .form-full { grid-column: 1 / -1; }
 
-        .toast { position: fixed; bottom: 2rem; right: 2rem; padding: 1rem 2rem; border-radius: 8px; color: white; display: none; z-index: 1000; }
-        .show { display: block; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    </style>
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; }
+  .form-group label span.req { color: #c0392b; margin-left: 2px; }
+
+  input[type="text"], input[type="number"], input[type="date"], input[type="tel"],
+  select, textarea {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    background: var(--surface);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    width: 100%;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(36,86,164,0.10);
+  }
+  input::placeholder { color: var(--text3); }
+
+  /* Autocomplete Address */
+  .autocomplete-wrap { position: relative; }
+  .autocomplete-list {
+    position: absolute;
+    top: calc(100% + 4px); left: 0; right: 0;
+    background: var(--surface);
+    border: 1.5px solid var(--primary-light);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    z-index: 200;
+    max-height: 220px;
+    overflow-y: auto;
+    display: none;
+  }
+  .autocomplete-list.open { display: block; }
+  .ac-item {
+    padding: 10px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    transition: background 0.1s;
+  }
+  .ac-item:last-child { border-bottom: none; }
+  .ac-item:hover, .ac-item.selected { background: var(--surface2); color: var(--primary); }
+  .ac-item mark { background: #fff3c0; color: var(--text); border-radius: 2px; }
+
+  .form-divider { grid-column: 1/-1; border: none; border-top: 1.5px dashed var(--border); margin: 4px 0; }
+
+  .form-section-label {
+    grid-column: 1/-1;
+    font-family: 'Sora', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 4px 0 2px;
+    border-left: 3px solid var(--accent);
+    padding-left: 10px;
+  }
+
+  .btn-submit {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: 13px 36px;
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: background 0.15s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-submit:hover { background: var(--primary-light); }
+  .btn-submit:active { transform: scale(0.98); }
+  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .btn-reset {
+    background: none;
+    color: var(--text2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 24px;
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .btn-reset:hover { border-color: var(--text3); }
+
+  .form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 28px; }
+
+  /* Toast */
+  #toast {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: var(--success);
+    color: #fff;
+    padding: 14px 22px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+    z-index: 9999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+    max-width: 360px;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  #toast.error { background: var(--danger); }
+
+  /* Loading overlay */
+  #loading {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,58,107,0.18);
+    z-index: 9000;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 14px;
+  }
+  #loading.show { display: flex; }
+  .spinner {
+    width: 44px; height: 44px;
+    border: 4px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    background: transparent;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #loading p { color: #fff; font-weight: 600; font-size: 15px; }
+
+  .refresh-btn {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 18px;
+    font-size: 13px;
+    font-family: 'Sora', sans-serif;
+    font-weight: 500;
+    color: var(--primary);
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-left: auto;
+    display: block;
+    margin-bottom: 14px;
+  }
+  .refresh-btn:hover { background: var(--surface2); }
+</style>
 </head>
 <body>
 
-<header class="header">
-    <img src="logo.png" alt="Logo" class="header-logo">
-    <div class="header-title">
-        <h1>Pinnacle Global School</h1>
-        <p>Tradition | Innovation | Excellence</p>
-    </div>
+<header>
+  <img src="logo.png" alt="Pinnacle Global School Logo" id="logoImg">
+  <div>
+    <div class="header-title">Pinnacle Global School</div>
+    <div class="header-sub">Student ERP Portal</div>
+  </div>
+  <div class="spacer"></div>
+  <div style="font-size:12px;color:rgba(255,255,255,0.65);text-align:right;" id="headerDate"></div>
 </header>
 
-<div class="layout">
-    <aside class="sidebar">
-        <div class="sidebar-branding">
-            <img src="logo.png" alt="Logo" class="sidebar-logo">
-        </div>
-        <div class="nav-item active" onclick="showPage('dashboard',this)">Dashboard</div>
-        <div class="nav-item" onclick="showPage('entry',this)">Data Entry</div>
-        <div class="nav-item" onclick="showPage('edit',this)">Edit Records</div>
-    </aside>
+<nav>
+  <button class="nav-btn active" onclick="showPage('dashboard')">&#9632; Dashboard</button>
+  <button class="nav-btn" onclick="showPage('entry')">&#43; New Student Entry</button>
+</nav>
 
-    <main class="main">
-        <div id="page-dashboard" class="page active">
-            <div class="stats-grid">
-                <div class="stat-card"><span class="stat-label">Total</span><span class="stat-value" id="statTotal">0</span></div>
-                <div class="stat-card"><span class="stat-label">Month</span><span class="stat-value" id="statMonth">0</span></div>
-                <div class="stat-card"><span class="stat-label">Fees</span><span class="stat-value" id="statFees">0</span></div>
-                <div class="stat-card"><span class="stat-label">Today</span><span class="stat-value" id="statToday">0</span></div>
-            </div>
-            <div class="card">
-                <span class="card-title">Recent Admissions</span>
-                <div class="table-wrapper">
-                    <table>
-                        <thead><tr><th>Adm No</th><th>Student Name</th><th>Father</th><th>Class</th><th>Date</th></tr></thead>
-                        <tbody id="dashBody"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="page-entry" class="page">
-            <div class="card">
-                <span class="card-title">Student Registration Form</span>
-                <div class="admission-banner" id="admBanner" style="display:none; background:var(--cream); padding:1rem; border:1px solid var(--gold); border-radius:8px; margin-bottom:1rem; color:var(--navy);">
-                    Registration Successful! Admission No: <strong id="admNumber"></strong>
-                </div>
-                <div class="form-grid">
-                    <div class="form-group"><label>Reg Form No*</label><input type="text" id="f_regNo"></div>
-                    <div class="form-group"><label>Student Name*</label><input type="text" id="f_name"></div>
-                    <div class="form-group"><label>Mother's Name*</label><input type="text" id="f_mother"></div>
-                    <div class="form-group"><label>Father's Name*</label><input type="text" id="f_father"></div>
-                    <div class="form-group"><label>Class*</label><select id="f_class">
-                        <option value="">Select</option><option>Nursery</option><option>LKG</option><option>UKG</option>
-                        <option>1st</option><option>2nd</option><option>3rd</option><option>4th</option>
-                        <option>5th</option><option>6th</option><option>7th</option><option>8th</option>
-                        <option>9th</option><option>10th</option><option>11th</option><option>12th</option>
-                    </select></div>
-                    <div class="form-group"><label>DOB*</label><input type="text" id="f_dob" placeholder="DD/MM/YYYY"></div>
-                    <div class="form-group"><label>Phone*</label><input type="tel" id="f_phone" maxlength="10"></div>
-                    <div class="form-group"><label>Admission Date*</label><input type="text" id="f_doa" placeholder="DD/MM/YYYY"></div>
-                    <div class="form-group"><label>Caste*</label><select id="f_caste"><option>General</option><option>OBC</option><option>SC</option><option>ST</option></select></div>
-                    <div class="form-group"><label>Gender*</label><select id="f_gender"><option>Male</option><option>Female</option></select></div>
-                    <div class="form-group"><label>Aadhaar</label><input type="text" id="f_aadhaar" maxlength="12"></div>
-                    <div class="form-group"><label>Fee (₹)</label><input type="number" id="f_fee"></div>
-                    <div class="form-group full-width"><label>Address*</label><select id="f_address"><option value="">Loading...</option></select></div>
-                </div>
-                <div style="margin-top:2rem;"><button class="btn btn-primary" id="submitBtn" onclick="submitEntry()">Submit Admission</button></div>
-            </div>
-        </div>
-
-        <div id="page-edit" class="page">
-            <div class="card"><span class="card-title">Master Register</span><div id="editWrap" class="table-wrapper"></div></div>
-        </div>
-    </main>
+<div id="loading">
+  <div class="spinner"></div>
+  <p>Processing...</p>
 </div>
 
-<div class="toast" id="toast"></div>
+<div id="toast"></div>
+
+<main>
+  <!-- DASHBOARD PAGE -->
+  <div class="page active" id="page-dashboard">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+      <div>
+        <div style="font-family:'Sora',sans-serif;font-size:22px;font-weight:700;color:var(--primary);">Dashboard</div>
+        <div style="font-size:13px;color:var(--text3);margin-top:3px;" id="dashYear">Current Academic Year Registrations</div>
+      </div>
+      <button class="refresh-btn" onclick="loadDashboard()">&#8635; Refresh</button>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Registrations</div>
+        <div class="stat-value" id="statTotal">—</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-label">Total Fees Collected</div>
+        <div class="stat-value" id="statFees">—</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Classes Covered</div>
+        <div class="stat-value" id="statClasses">—</div>
+      </div>
+    </div>
+
+    <div class="section-title">Class-wise Registrations</div>
+    <div class="class-grid" id="classGrid">
+      <div class="class-chip"><div class="cls-count">—</div><div class="cls-name">Loading</div></div>
+    </div>
+
+    <div class="section-title">Recent Registrations</div>
+    <div class="table-wrap">
+      <table id="dashTable">
+        <thead>
+          <tr>
+            <th>Reg. Form No.</th>
+            <th>Date of Admission</th>
+            <th>Class</th>
+            <th>Student Name</th>
+            <th>Father's Name</th>
+            <th>Address</th>
+            <th>Reg. Fee Paid</th>
+          </tr>
+        </thead>
+        <tbody id="dashBody">
+          <tr><td colspan="7" class="empty-state">Loading data...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ENTRY PAGE -->
+  <div class="page" id="page-entry">
+    <div class="form-card">
+      <div class="form-header">
+        <img src="logo.png" alt="Logo" id="formLogo">
+        <div class="form-header-text">
+          <h2>Student Registration Form</h2>
+          <p>Pinnacle Global School — New Admission Entry</p>
+        </div>
+      </div>
+      <div class="form-body">
+        <form id="studentForm" autocomplete="off">
+          <div class="form-grid">
+            <div class="form-section-label">Registration Details</div>
+
+            <div class="form-group">
+              <label>Registration Form Number <span class="req">*</span></label>
+              <input type="text" id="regFormNo" placeholder="e.g. PGS-2025-001" required>
+            </div>
+
+            <div class="form-group">
+              <label>Date of Admission <span class="req">*</span></label>
+              <input type="date" id="admDate" required>
+            </div>
+
+            <div class="form-group">
+              <label>Class of Admission <span class="req">*</span></label>
+              <select id="classAdm" required>
+                <option value="">— Select Class —</option>
+                <option>Nursery</option><option>LKG</option><option>UKG</option>
+                <option>1st</option><option>2nd</option><option>3rd</option><option>4th</option><option>5th</option>
+                <option>6th</option><option>7th</option><option>8th</option><option>9th</option><option>10th</option>
+                <option>11th</option><option>12th</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Registration Fee Amount Paid (₹)</label>
+              <input type="number" id="regFee" placeholder="e.g. 500" min="0">
+            </div>
+
+            <hr class="form-divider">
+            <div class="form-section-label">Student Information</div>
+
+            <div class="form-group">
+              <label>Student Name <span class="req">*</span></label>
+              <input type="text" id="studentName" placeholder="Full name of student" required>
+            </div>
+
+            <div class="form-group">
+              <label>Date of Birth <span class="req">*</span></label>
+              <input type="date" id="dob" required>
+            </div>
+
+            <div class="form-group">
+              <label>Gender <span class="req">*</span></label>
+              <select id="gender" required>
+                <option value="">— Select Gender —</option>
+                <option>Male</option><option>Female</option><option>Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Caste <span class="req">*</span></label>
+              <select id="caste" required>
+                <option value="">— Select Caste —</option>
+                <option>General</option><option>OBC</option><option>SC</option><option>ST</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Student Aadhaar Number</label>
+              <input type="text" id="aadhaar" placeholder="12-digit Aadhaar number" maxlength="14">
+            </div>
+
+            <div class="form-group">
+              <label>Phone Number <span class="req">*</span></label>
+              <input type="tel" id="phone" placeholder="10-digit mobile number" maxlength="10" required>
+            </div>
+
+            <hr class="form-divider">
+            <div class="form-section-label">Parent / Guardian Details</div>
+
+            <div class="form-group">
+              <label>Mother's Name</label>
+              <input type="text" id="motherName" placeholder="Full name of mother">
+            </div>
+
+            <div class="form-group">
+              <label>Father's Name <span class="req">*</span></label>
+              <input type="text" id="fatherName" placeholder="Full name of father" required>
+            </div>
+
+            <hr class="form-divider">
+            <div class="form-section-label">School & Address</div>
+
+            <div class="form-group">
+              <label>Previous School</label>
+              <input type="text" id="prevSchool" placeholder="Name of previous school (if any)">
+            </div>
+
+            <div class="form-group form-full">
+              <label>Address <span class="req">*</span></label>
+              <div class="autocomplete-wrap">
+                <input type="text" id="addressInput" placeholder="Type 2+ letters to search address..." autocomplete="off" required>
+                <input type="hidden" id="addressValue">
+                <div class="autocomplete-list" id="addressList"></div>
+              </div>
+            </div>
+
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-reset" onclick="resetForm()">&#8635; Reset Form</button>
+            <button type="submit" class="btn-submit" id="submitBtn">
+              <span>&#10003;</span> Submit Registration
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
 
 <script>
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxtde4ywK0BKRDrFzIEkqW_-vTnrND77h6GVwHK0pohRxWMGkjwmyouvdaSQwK7lZmAsw/exec";
-    const S1_ID = "1OGjVUEvD-vWJ73vANmjbNFezvXplhkTS5sSx3jDE5cI";
-    const S1_AW_GID = "0";
-    const S1_MK_GID = "1915083603";
+// =====================
+// CONFIG
+// =====================
+const SHEET_ID = '1OGjVUEvD-vWJ73vANmjbNFezvXplhkTS5sSx3jDE5cI';
+const SHEET_NAME = 'AW register';
+const API_KEY = 'AIzaSyBhX9XgXxXxXxXxXxXxXxXxXxXxXxXxXx'; // ← REPLACE WITH YOUR GOOGLE SHEETS API KEY
+const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_WEB_APP_URL'; // ← REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
 
-    function toast(msg, type="success") {
-        const t = document.getElementById("toast");
-        t.textContent = msg; t.style.background = type === "success" ? "#1a7a4a" : "#b91c1c";
-        t.className = "toast show"; setTimeout(() => t.className = "toast", 3000);
+// Column mapping (1-indexed: A=1, B=2, C=3, ...)
+// C=3 (Date of Admission), D=4 (Student Name), E=5 (Class), F=6 (Mother), G=7 (Father)
+// H=8 (Address), K=11 (Caste), L=12 (DOB), N=14 (Prev School)
+// W=23 (Phone), Y=25 (Aadhaar), Z=26 (Gender)
+// B=2 (Admission Number - fetched)
+
+const ADDRESS_OPTIONS = [
+  "Village : Aadha, Post : Sikandrabad, District : Bulandshahr",
+  "Village : Banchawali, Post : Banchawali, District : Bulandshahr",
+  "Village : Birondi Tajpur, Post : Birondi Tajpur, District : Bulandshahr",
+  "Village : Bodha, Post : Prangarh, District : Bulandshahr",
+  "Village : Bohrawas, Post : Roopwas Pachgai, District : Bulandshahr",
+  "Bulandshahr City, District Bulandshahr",
+  "Village : Chachoi, Post : Roopwas Pachgai, District : Bulandshahr",
+  "Village : Chola, Post : Chola, District : Bulandshahr",
+  "Village : Dhamera, Post : Roopwas Pachgai, District : Bulandshahr",
+  "Village : Dhanora, Post : Dhanora, District : Bulandshahr",
+  "Village : Fatehpur, Post : Chola, District : Bulandshahr",
+  "Village : Gangraul, Post : Chola, District : Bulandshahr",
+  "Village : Hartauli, Post : Naithla, District : Bulandshahr",
+  "Village : Kanakpur, Post : Baroda, District : Bulandshahr",
+  "Village : Khawaspur, Post : Chola, District : Bulandshahr",
+  "Village : Kondu, Post : Banchawali, District : Bulandshahr",
+  "Village : Luhakar, Post : Rasulpur, District : Bulandshahr",
+  "Village : Machkauli, Post : Jhal Khera, District : Bulandshahr",
+  "Village : Nagla Allahabad, Post : Chola, District : Bulandshahr",
+  "Village : Nagla Baroda, Post : Baroda, District : Bulandshahr",
+  "Village : Naithla, Post : Naithla, District : Bulandshahr",
+  "Village : Nawada, Post : Birondi Tajpur, District : Bulandshahr",
+  "Village : Nithari, Post : Wair, District : Bulandshahr",
+  "Village : Pachauta, Post : Sikhera, District : Bulandshahr",
+  "Village : Roopwas Pachgai, Post : Roopwas Pachgai, District : Bulandshahr",
+  "Village : Rasulpur, Post : Rasulpur, District : Bulandshahr",
+  "Village : Sabdalpur, Post : Kahira, District : Bulandshahr",
+  "Village : Shahpur, Post : Rasulpur, District : Bulandshahr",
+  "Village : Sikhera, Post : Sikhera, District : Bulandshahr",
+  "Village : Sultanpur, Post : Chola, District : Bulandshahr",
+  "Village : Sutari, Post : Dariyapur, District : Bulandshahr",
+  "Village : Sherpur, Post : Kahira, District : Bulandshahr",
+  "Village : Kaithra, Post : Kahira, District : Bulandshahr",
+  "Village : Dheemri, Post : Naithla, District : Bulandshahr",
+  "Village : Shahwazpur, Post : Prangarh, District : Bulandshahr",
+  "Sikandrabad, District : Bulandshahr",
+  "Khurja, District : Bulandshahr",
+  "Village : Fauladpur, Post : Birondi Tajpur, District : Bulandshahr",
+  "Chola Police Station, District : Bulandshahr",
+  "Village : Bhuchanagar, Post : Naithla, District : Bulandshahr",
+  "Village : Dostpur, Post : Dariyapur, District : Bulandshahr",
+  "Village : Sunehra, Post : Naithla, District : Bulandshahr",
+  "Village : Nagla Tota, Post : Nagla Tota, District : Bulandshahr",
+  "Village : Nagalia, Post : Gangera, District : Bulandshahr",
+  "Village : Gangera, Post : Gangera, District : Bulandshahr"
+];
+
+const CLASSES = ['Nursery','LKG','UKG','1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th'];
+
+// =====================
+// NAVIGATION
+// =====================
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'dashboard') loadDashboard();
+}
+
+// =====================
+// DATE HEADER
+// =====================
+(function() {
+  const now = new Date();
+  document.getElementById('headerDate').textContent = now.toLocaleDateString('en-IN', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+  document.getElementById('dashYear').textContent = `Registrations — January to December ${now.getFullYear()}`;
+})();
+
+// =====================
+// AUTOCOMPLETE ADDRESS
+// =====================
+const addressInput = document.getElementById('addressInput');
+const addressList = document.getElementById('addressList');
+const addressValue = document.getElementById('addressValue');
+
+addressInput.addEventListener('input', function() {
+  const q = this.value.trim().toLowerCase();
+  if (q.length < 2) { addressList.classList.remove('open'); return; }
+  const matches = ADDRESS_OPTIONS.filter(a => a.toLowerCase().includes(q));
+  if (!matches.length) { addressList.innerHTML = '<div class="ac-item" style="color:var(--text3)">No matches found</div>'; addressList.classList.add('open'); return; }
+  const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+  addressList.innerHTML = matches.map(a =>
+    `<div class="ac-item" onclick="selectAddress(this)" data-val="${a}">${a.replace(re,'<mark>$1</mark>')}</div>`
+  ).join('');
+  addressList.classList.add('open');
+  addressValue.value = '';
+});
+
+function selectAddress(el) {
+  addressInput.value = el.dataset.val;
+  addressValue.value = el.dataset.val;
+  addressList.classList.remove('open');
+}
+
+document.addEventListener('click', function(e) {
+  if (!addressInput.contains(e.target) && !addressList.contains(e.target)) addressList.classList.remove('open');
+});
+
+// =====================
+// FORM: FORMAT DOB/DATE DISPLAY
+// =====================
+function toSheetDate(isoDate) {
+  if (!isoDate) return '';
+  const [y,m,d] = isoDate.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+// =====================
+// RESET FORM
+// =====================
+function resetForm() {
+  document.getElementById('studentForm').reset();
+  addressInput.value = '';
+  addressValue.value = '';
+}
+
+// =====================
+// TOAST
+// =====================
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (type==='error' ? ' error' : '');
+  setTimeout(() => t.className = '', 3800);
+}
+
+function setLoading(on) {
+  document.getElementById('loading').classList[on?'add':'remove']('show');
+}
+
+// =====================
+// GOOGLE SHEETS VIA APPS SCRIPT
+// =====================
+async function submitToSheet(data) {
+  // Sends data to Google Apps Script Web App
+  const resp = await fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+    mode: 'no-cors'
+  });
+  return true; // no-cors doesn't return readable response
+}
+
+// =====================
+// FORM SUBMIT
+// =====================
+document.getElementById('studentForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const addr = addressValue.value || addressInput.value;
+  if (!addr) { showToast('Please select an address from the dropdown.', 'error'); return; }
+
+  const data = {
+    regFormNo: document.getElementById('regFormNo').value.trim(),
+    admDate: toSheetDate(document.getElementById('admDate').value),
+    classAdm: document.getElementById('classAdm').value,
+    regFee: document.getElementById('regFee').value || '',
+    studentName: document.getElementById('studentName').value.trim(),
+    dob: toSheetDate(document.getElementById('dob').value),
+    gender: document.getElementById('gender').value,
+    caste: document.getElementById('caste').value,
+    aadhaar: document.getElementById('aadhaar').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    motherName: document.getElementById('motherName').value.trim(),
+    fatherName: document.getElementById('fatherName').value.trim(),
+    prevSchool: document.getElementById('prevSchool').value.trim(),
+    address: addr
+  };
+
+  setLoading(true);
+  document.getElementById('submitBtn').disabled = true;
+
+  try {
+    await submitToSheet(data);
+    showToast('✓ Student registration submitted successfully!');
+    resetForm();
+    // Switch to dashboard after short delay
+    setTimeout(() => {
+      document.querySelector('.nav-btn').click();
+    }, 1200);
+  } catch(err) {
+    showToast('Error submitting data. Please check your Apps Script URL and try again.', 'error');
+    console.error(err);
+  } finally {
+    setLoading(false);
+    document.getElementById('submitBtn').disabled = false;
+  }
+});
+
+// =====================
+// DASHBOARD: Load from Sheets
+// =====================
+async function loadDashboard() {
+  setLoading(true);
+  try {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!A:AZ?key=${API_KEY}`;
+    const resp = await fetch(url);
+    const json = await resp.json();
+
+    if (json.error) {
+      // If API key not configured, show sample UI
+      showSampleDashboard();
+      setLoading(false);
+      return;
     }
 
-    async function fetchCSV(id, gid) {
-        const res = await fetch(`https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`);
-        const text = await res.text();
-        return text.split("\n").map(row => row.split(",").map(cell => cell.replace(/^"|"$/g, '')));
+    const rows = json.values || [];
+    const currentYear = new Date().getFullYear();
+
+    // Filter rows where col C (index 2) has a date in current year
+    // Col mapping: A=0,B=1,C=2,D=3,E=4,F=5,G=6,H=7,...K=10,L=11,...N=13,...W=22,...Y=24,Z=25
+    const entries = [];
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      const dateAdm = row[2]; // Column C
+      if (!dateAdm) continue;
+      // Parse DD/MM/YYYY
+      const parts = dateAdm.split('/');
+      if (parts.length !== 3) continue;
+      const yr = parseInt(parts[2]);
+      if (yr !== currentYear) continue;
+
+      entries.push({
+        admNo: row[1] || '',       // B
+        dateAdm: row[2] || '',     // C
+        studentName: row[3] || '', // D
+        classAdm: row[4] || '',    // E
+        motherName: row[5] || '',  // F
+        fatherName: row[6] || '',  // G
+        address: row[7] || '',     // H
+        caste: row[10] || '',      // K
+        dob: row[11] || '',        // L
+        prevSchool: row[13] || '', // N
+        phone: row[22] || '',      // W
+        aadhaar: row[24] || '',    // Y
+        gender: row[25] || '',     // Z
+        regFormNo: row[30] || '',  // Row-specific; Apps Script stores in custom col
+        regFee: row[31] || '0',    // Registration fee (custom col, see Apps Script)
+      });
     }
 
-    function showPage(name, el) {
-        document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-        document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
-        document.getElementById("page-"+name).classList.add("active");
-        el.classList.add("active");
-    }
+    renderDashboard(entries);
+  } catch(err) {
+    console.error(err);
+    showSampleDashboard();
+  }
+  setLoading(false);
+}
 
-    async function loadAddressDropdown() {
-        const rows = await fetchCSV(S1_ID, S1_MK_GID);
-        const addresses = rows.slice(3, 54).map(r => r[24]).filter(a => a);
-        document.getElementById("f_address").innerHTML = '<option value="">Select Address</option>' + 
-            addresses.map(a => `<option value="${a}">${a}</option>`).join("");
-    }
+function renderDashboard(entries) {
+  // Stats
+  document.getElementById('statTotal').textContent = entries.length;
+  const totalFees = entries.reduce((s, e) => s + (parseFloat(e.regFee) || 0), 0);
+  document.getElementById('statFees').textContent = '₹' + totalFees.toLocaleString('en-IN');
 
-    async function loadDashboard() {
-        const rows = await fetchCSV(S1_ID, S1_AW_GID);
-        const data = rows.slice(1).filter(r => r[1]);
-        document.getElementById("statTotal").textContent = data.length;
-        document.getElementById("dashBody").innerHTML = data.slice(-5).reverse().map(r => 
-            `<tr><td>${r[1]}</td><td>${r[3]}</td><td>${r[6]}</td><td>${r[4]}</td><td>${r[2]}</td></tr>`).join("");
-    }
+  // Class counts
+  const classCounts = {};
+  CLASSES.forEach(c => classCounts[c] = 0);
+  entries.forEach(e => { if (classCounts[e.classAdm] !== undefined) classCounts[e.classAdm]++; });
+  const nonEmpty = Object.values(classCounts).filter(v => v > 0).length;
+  document.getElementById('statClasses').textContent = nonEmpty;
 
-    async function submitEntry() {
-        const data = {
-            regNo: document.getElementById("f_regNo").value,
-            name: document.getElementById("f_name").value,
-            mother: document.getElementById("f_mother").value,
-            father: document.getElementById("f_father").value,
-            address: document.getElementById("f_address").value,
-            cls: document.getElementById("f_class").value,
-            dob: document.getElementById("f_dob").value,
-            phone: document.getElementById("f_phone").value,
-            doa: document.getElementById("f_doa").value,
-            caste: document.getElementById("f_caste").value,
-            gender: document.getElementById("f_gender").value,
-            aadhaar: document.getElementById("f_aadhaar").value,
-            fee: document.getElementById("f_fee").value
-        };
+  const cg = document.getElementById('classGrid');
+  cg.innerHTML = CLASSES.map(c =>
+    `<div class="class-chip"><div class="cls-count">${classCounts[c]}</div><div class="cls-name">${c}</div></div>`
+  ).join('');
 
-        if (!data.name || !data.doa) return toast("Name and Date are required", "error");
+  // Table
+  const tbody = document.getElementById('dashBody');
+  if (!entries.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No registrations found for the current year.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = entries.map(e => `
+    <tr>
+      <td><span class="badge badge-blue">${e.regFormNo || '—'}</span></td>
+      <td>${e.dateAdm}</td>
+      <td><span class="badge badge-green">${e.classAdm}</span></td>
+      <td style="font-weight:500">${e.studentName}</td>
+      <td>${e.fatherName}</td>
+      <td style="font-size:12px;color:var(--text2);max-width:200px">${e.address}</td>
+      <td style="font-weight:600;color:var(--success)">₹${parseFloat(e.regFee||0).toLocaleString('en-IN')}</td>
+    </tr>
+  `).join('');
+}
 
-        const btn = document.getElementById("submitBtn");
-        btn.disabled = true; btn.textContent = "Processing...";
+function showSampleDashboard() {
+  // Show placeholder when API not configured
+  document.getElementById('statTotal').textContent = '—';
+  document.getElementById('statFees').textContent = '—';
+  document.getElementById('statClasses').textContent = '—';
+  const cg = document.getElementById('classGrid');
+  cg.innerHTML = CLASSES.map(c =>
+    `<div class="class-chip"><div class="cls-count">—</div><div class="cls-name">${c}</div></div>`
+  ).join('');
+  document.getElementById('dashBody').innerHTML = `
+    <tr><td colspan="7" class="empty-state">
+      Configure your Google API Key and Apps Script URL to see live data.<br>
+      <a href="#" style="color:var(--primary-light);font-size:13px;" onclick="showPage('entry');return false;">Go to Student Entry Form →</a>
+    </td></tr>`;
+}
 
-        try {
-            const res = await fetch(APPS_SCRIPT_URL, {
-                method: "POST",
-                body: JSON.stringify({ action: "addStudent", data })
-            });
-            const result = await res.json();
-            if (result.success) {
-                document.getElementById("admNumber").textContent = result.admissionNumber;
-                document.getElementById("admBanner").style.display = "block";
-                toast("Admission Successful");
-                loadDashboard();
-            }
-        } catch(e) { toast("Error: " + e.message, "error"); }
-        btn.disabled = false; btn.textContent = "Submit Admission";
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-        loadAddressDropdown();
-        loadDashboard();
-    });
+// Initial load
+loadDashboard();
 </script>
 </body>
 </html>
