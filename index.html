@@ -310,11 +310,10 @@
    <script>
     // Sheet Details
     const SHEET_ID = '1Sy5uBZkjKpGnLdZp2sFuhFORhO1fRqCswfNYHRl73PM';
-    const SHEET_NAME = encodeURIComponent('DS n Notice');
     const GID = '1383668039';
     
-    // Explicitly ask for the specific tab name and gid
-    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}&gid=${GID}`;
+    // headers=0 ensures Row 1 is NOT swallowed as a column header
+    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}&headers=0`;
 
     let currentMode = 'datesheet';
     let rawRows = [];
@@ -329,9 +328,8 @@
             const response = await fetch(SHEET_URL);
             const text = await response.text();
 
-            // Check if sheet returned Google login HTML (permissions issue)
             if (text.includes("<!DOCTYPE") || text.includes("<html")) {
-                throw new Error("Spreadsheet is not public. Please set 'General access' to 'Anyone with the link can view' in Google Sheets.");
+                throw new Error("Spreadsheet is not public. Please ensure 'General access' is set to 'Anyone with the link can view'.");
             }
 
             const jsonStart = text.indexOf("{");
@@ -348,7 +346,7 @@
             }
 
             rawRows = data.table.rows;
-            console.log(`Loaded ${rawRows.length} rows successfully.`);
+            console.log(`Successfully fetched ${rawRows.length} rows.`);
 
             extractHeaderMetadata();
             parseDateSheet();
@@ -369,8 +367,12 @@
     function getCellVal(r, c) {
         if (rawRows[r] && rawRows[r].c && rawRows[r].c[c]) {
             const cell = rawRows[r].c[c];
-            if (cell.f !== null && cell.f !== undefined) return String(cell.f).trim();
-            if (cell.v !== null && cell.v !== undefined) return String(cell.v).trim();
+            if (cell.f !== null && cell.f !== undefined && String(cell.f).trim() !== "") {
+                return String(cell.f).trim();
+            }
+            if (cell.v !== null && cell.v !== undefined && String(cell.v).trim() !== "") {
+                return String(cell.v).trim();
+            }
         }
         return "";
     }
@@ -379,7 +381,7 @@
         return str.replace(/^CLASS[\s-:]*/i, '').trim();
     }
 
-    // Extract Exam Name (B1 / cell [0,1]) and Session (F1 / cell [0,5])
+    // B1: Exam Name, F1: Session
     function extractHeaderMetadata() {
         const b1 = getCellVal(0, 1);
         if (b1) examName = b1;
@@ -388,38 +390,40 @@
         if (f1) sessionYear = f1;
     }
 
-    // Parse Datesheet: searches row 1..3 for class headers (Nursery, LKG, etc.)
+    // Date Sheet: Classes in B2:P2 (Row index 1, cols 1 to 15)
+    // Minor: A4:A5 (Dates), B4:P5 (Subjects)
+    // Major: A7:A12 (Dates), B7:P12 (Subjects)
     function parseDateSheet() {
         parsedDatesheetData = {};
 
-        // Auto-detect class header row around row 2 (indices 0 to 4)
-        let headerRowIdx = -1;
+        // Find which row has the class headers (typically row index 1)
+        let classRowIdx = 1;
+        let found = false;
         for (let r = 0; r <= 3; r++) {
             for (let c = 1; c <= 15; c++) {
                 const val = getCellVal(r, c).toLowerCase();
                 if (val.includes("nur") || val.includes("1st") || val.includes("6th")) {
-                    headerRowIdx = r;
+                    classRowIdx = r;
+                    found = true;
                     break;
                 }
             }
-            if (headerRowIdx !== -1) break;
+            if (found) break;
         }
-
-        if (headerRowIdx === -1) headerRowIdx = 1; // fallback to row index 1 (Sheet row 2)
 
         const classCols = {};
         for (let c = 1; c <= 15; c++) {
-            let clsName = getCellVal(headerRowIdx, c);
-            if (clsName) {
-                clsName = normalizeClassName(clsName);
-                classCols[c] = clsName;
-                if (!parsedDatesheetData[clsName]) {
-                    parsedDatesheetData[clsName] = { minor: [], major: [] };
+            let cls = getCellVal(classRowIdx, c);
+            if (cls) {
+                cls = normalizeClassName(cls);
+                classCols[c] = cls;
+                if (!parsedDatesheetData[cls]) {
+                    parsedDatesheetData[cls] = { minor: [], major: [] };
                 }
             }
         }
 
-        // Minor Exams: Row indices 3 & 4 (Rows 4 & 5)
+        // Minor exams: Row 4 & 5 (indices 3 & 4)
         for (let r = 3; r <= 4; r++) {
             const date = getCellVal(r, 0);
             if (!date) continue;
@@ -432,7 +436,7 @@
             }
         }
 
-        // Major Exams: Row indices 6 to 11 (Rows 7 to 12)
+        // Major exams: Row 7 to 12 (indices 6 to 11)
         for (let r = 6; r <= 11; r++) {
             const date = getCellVal(r, 0);
             if (!date) continue;
@@ -446,42 +450,44 @@
         }
     }
 
-    // Parse Syllabus: Finds Nursery block and 6th block dynamically
+    // Syllabus:
+    // Nursery to 5th: Row 51 (header, index 50), Data: Rows 53 to 66 (indices 52 to 65), Cols A to P (0 to 15)
+    // 6th to 12th: Row 67 (header, index 66), Data: Rows 69 to 82 (indices 68 to 81), Cols A to N (0 to 13)
     function parseSyllabus() {
         parsedSyllabusData = {};
 
         let nurseryRowIdx = -1;
         let sixthRowIdx = -1;
 
-        // Scan rows 30 to 80 for where the Class headers actually start
-        for (let r = 30; r < rawRows.length; r++) {
+        // Auto-locate Row 51 and Row 67 if there are row shifts
+        for (let r = 0; r < rawRows.length; r++) {
             for (let c = 0; c < 16; c++) {
                 const val = getCellVal(r, c).toLowerCase();
                 if (nurseryRowIdx === -1 && (val.includes("nursery") || val === "nur")) {
                     nurseryRowIdx = r;
                 }
-                if (sixthRowIdx === -1 && (val.includes("6th") || val === "vi")) {
+                if (sixthRowIdx === -1 && (val.includes("6th") || val === "vi" || val.includes("class 6"))) {
                     sixthRowIdx = r;
                 }
             }
         }
 
-        // Fallbacks if not auto-detected: Row 51 is index 50, Row 67 is index 66
+        // Fallbacks to user-provided coordinates (0-indexed: Row 51 -> 50, Row 67 -> 66)
         if (nurseryRowIdx === -1) nurseryRowIdx = 50;
         if (sixthRowIdx === -1) sixthRowIdx = 66;
 
-        // Block 1: Nursery to 5th (Data starts 2 rows below header, ends right before 6th block)
-        const b1End = sixthRowIdx > nurseryRowIdx ? sixthRowIdx - 1 : nurseryRowIdx + 15;
-        parseSyllabusBlock(nurseryRowIdx, nurseryRowIdx + 2, b1End, 16);
+        // Parse Nursery to 5th
+        const nurseryDataEnd = sixthRowIdx > nurseryRowIdx ? (sixthRowIdx - 1) : (nurseryRowIdx + 15);
+        parseSyllabusBlock(nurseryRowIdx, nurseryRowIdx + 2, nurseryDataEnd, 16);
 
-        // Block 2: 6th to 12th
-        parseSyllabusBlock(sixthRowIdx, sixthRowIdx + 2, Math.min(sixthRowIdx + 16, rawRows.length - 1), 14);
+        // Parse 6th to 12th
+        parseSyllabusBlock(sixthRowIdx, sixthRowIdx + 2, Math.min(sixthRowIdx + 15, rawRows.length - 1), 14);
     }
 
-    function parseSyllabusBlock(classHeaderRowIdx, startRowIdx, endRowIdx, maxColIndex) {
+    function parseSyllabusBlock(classHeaderRowIdx, startRowIdx, endRowIdx, maxCols) {
         if (!rawRows[classHeaderRowIdx]) return;
 
-        for (let c = 0; c < maxColIndex; c += 2) {
+        for (let c = 0; c < maxCols; c += 2) {
             let className = getCellVal(classHeaderRowIdx, c + 1) || getCellVal(classHeaderRowIdx, c);
             if (!className) continue;
             className = normalizeClassName(className);
@@ -671,3 +677,6 @@
 
     window.addEventListener('DOMContentLoaded', fetchSheetData);
 </script>
+
+</body>
+</html>
