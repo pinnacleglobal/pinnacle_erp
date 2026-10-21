@@ -506,7 +506,7 @@
         }
     }
 
-    function renderCard() {
+function renderCard() {
         const selectedClass = document.getElementById('classSelect').value;
         const tbody = document.getElementById('tableBody');
         const thCol1 = document.getElementById('thCol1');
@@ -527,10 +527,42 @@
             banner.innerText = `Date Sheet: ${examNameDatesheet}`;
 
             const data = parsedDatesheetData[selectedClass] || { minor: [], major: [] };
-            const isMajorMinorApplicable = /half\s*yearly|annual/i.test(examNameDatesheet);
+            
+            // Check if this is a PT / Periodic Test exam
+            const cleanExamName = examNameDatesheet.toLowerCase().trim();
+            const isPTExam = cleanExamName.startsWith("pt") || 
+                             cleanExamName.includes("periodic") || 
+                             cleanExamName.includes("unit test") ||
+                             cleanExamName.includes("term");
 
-            // 1. HALF YEARLY & ANNUAL EXAMS: Keep exactly as they are (Minor + Major with headers)
-            if (isMajorMinorApplicable) {
+            // -------------------------------------------------------------
+            // 1. PT1, PT2, PT3, PT4 (or any non-Half Yearly/Annual exam):
+            // Strictly rows from A7 to A12 ONLY (data.major)
+            // NO Minor exam rows (A4:A5), NO subheaders
+            // -------------------------------------------------------------
+            if (isPTExam) {
+                const ptRows = data.major.filter(item => item.date.trim() !== "" && item.subject.trim() !== "");
+
+                if (ptRows.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; padding: 15px;">No date sheet found for Class ${selectedClass}.</td></tr>`;
+                    return;
+                }
+
+                // Render ONLY the filled rows from A7 to A12
+                ptRows.forEach(item => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="col-left-td">${item.date}</td>
+                            <td class="col-right-td">${item.subject}</td>
+                        </tr>
+                    `;
+                });
+            } 
+            // -------------------------------------------------------------
+            // 2. HALF YEARLY & ANNUAL EXAMS:
+            // Keep Minor + Major with their respective dark headers
+            // -------------------------------------------------------------
+            else {
                 if (data.minor.length === 0 && data.major.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; padding: 15px;">No date sheet found for Class ${selectedClass}.</td></tr>`;
                     return;
@@ -559,25 +591,6 @@
                         `;
                     });
                 }
-            } 
-            // 2. PT1, PT2, PT3, PT4 & OTHER EXAMS: Only rows from A7:A12, only filled rows, no headings
-            else {
-                const ptRows = data.major; // data.major holds A7:A12
-
-                if (ptRows.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; padding: 15px;">No date sheet found for Class ${selectedClass}.</td></tr>`;
-                    return;
-                }
-
-                // Render only the filled rows from A7 to A12 with no major/minor heading
-                ptRows.forEach(item => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td class="col-left-td">${item.date}</td>
-                            <td class="col-right-td">${item.subject}</td>
-                        </tr>
-                    `;
-                });
             }
 
         } else {
@@ -613,7 +626,7 @@
             });
         }
     }
-
+    
 // Exact-Coordinate Syllabus Parser with strict Row 69–82 limits
 function parseSyllabus() {
         parsedSyllabusData = {};
