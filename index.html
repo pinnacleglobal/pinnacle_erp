@@ -502,31 +502,71 @@
     }
 
 // Exact-Coordinate Syllabus Parser with strict Row 69–82 limits
+    // Bulletproof Syllabus Parser
     function parseSyllabus() {
         parsedSyllabusData = {};
 
-        // 1. Block 1: Nursery to 5th
-        // Sheet Row 51 is index 50 (Header)
-        // Sheet Rows 53 to 66 are indices 52 to 65 (Data)
-        const block1Config = [
-            { name: "Nursery", subCol: 0, sylCol: 1 },  // Cols A, B
-            { name: "LKG",     subCol: 2, sylCol: 3 },  // Cols C, D
-            { name: "UKG",     subCol: 4, sylCol: 5 },  // Cols E, F
-            { name: "1st",     subCol: 6, sylCol: 7 },  // Cols G, H
-            { name: "2nd",     subCol: 8, sylCol: 9 },  // Cols I, J
-            { name: "3rd",     subCol: 10, sylCol: 11 },// Cols K, L
-            { name: "4th",     subCol: 12, sylCol: 13 },// Cols M, N
-            { name: "5th",     subCol: 14, sylCol: 15 } // Cols O, P
+        // 1. Fixed, permanent class names (prevents accidental renaming to "English" or "Hindi")
+        const block1 = [
+            { name: "Nursery", subCol: 0, sylCol: 1 },  // A, B
+            { name: "LKG",     subCol: 2, sylCol: 3 },  // C, D
+            { name: "UKG",     subCol: 4, sylCol: 5 },  // E, F
+            { name: "1st",     subCol: 6, sylCol: 7 },  // G, H
+            { name: "2nd",     subCol: 8, sylCol: 9 },  // I, J
+            { name: "3rd",     subCol: 10, sylCol: 11 },// K, L
+            { name: "4th",     subCol: 12, sylCol: 13 },// M, N
+            { name: "5th",     subCol: 14, sylCol: 15 } // O, P
         ];
 
-        block1Config.forEach(item => {
-            // Read header from Row 51 (index 50)
-            const headerVal = getVal(50, item.sylCol) || getVal(50, item.subCol);
-            const className = headerVal ? cleanClassName(headerVal) : item.name;
-            parsedSyllabusData[className] = [];
+        const block2 = [
+            { name: "6th",  subCol: 0, sylCol: 1 },  // A, B
+            { name: "7th",  subCol: 2, sylCol: 3 },  // C, D
+            { name: "8th",  subCol: 4, sylCol: 5 },  // E, F
+            { name: "9th",  subCol: 6, sylCol: 7 },  // G, H
+            { name: "10th", subCol: 8, sylCol: 9 },  // I, J
+            { name: "11th", subCol: 10, sylCol: 11 },// K, L
+            { name: "12th", subCol: 12, sylCol: 13 } // M, N
+        ];
 
-            // Exactly Rows 53 to 66 (indices 52 to 65)
-            for (let r = 52; r <= 65; r++) {
+        // 2. Find the exact row containing "Nursery" (Row 51 in the sheet)
+        let nurseryRowIdx = -1;
+        for (let r = 0; r < matrix.length; r++) {
+            for (let c = 0; c < 4; c++) {
+                const val = getVal(r, c).toLowerCase();
+                if (val === "nursery" || val.includes("nursery")) {
+                    nurseryRowIdx = r;
+                    break;
+                }
+            }
+            if (nurseryRowIdx !== -1) break;
+        }
+
+        // Fallback to row 51 (index 50) if not found
+        if (nurseryRowIdx === -1) nurseryRowIdx = 50;
+
+        // 3. Find the exact row containing "6th" in columns A or B (Row 67 in the sheet)
+        let sixthRowIdx = -1;
+        for (let r = nurseryRowIdx + 5; r < matrix.length; r++) {
+            for (let c = 0; c < 4; c++) {
+                const val = getVal(r, c).toLowerCase();
+                if (val === "6th" || val.includes("6th") || val === "vi") {
+                    sixthRowIdx = r;
+                    break;
+                }
+            }
+            if (sixthRowIdx !== -1) break;
+        }
+
+        // Fallback to row 67 (index 66) if not found
+        if (sixthRowIdx === -1) sixthRowIdx = nurseryRowIdx + 16;
+
+        // 4. Parse Block 1: Nursery to 5th (Data starts 2 rows below header, exactly 14 rows to Row 66)
+        block1.forEach(item => {
+            parsedSyllabusData[item.name] = [];
+            const startRow = nurseryRowIdx + 2; // Row 53
+            const endRow = nurseryRowIdx + 15;  // Row 66
+
+            for (let r = startRow; r <= endRow; r++) {
                 if (r >= matrix.length) break;
                 const subject = getVal(r, item.subCol);
                 const syllabus = getVal(r, item.sylCol);
@@ -535,7 +575,7 @@
                 if (subLower === "class" || subLower === "subject" || subLower === "syllabus") continue;
 
                 if (subject !== "" || syllabus !== "") {
-                    parsedSyllabusData[className].push({
+                    parsedSyllabusData[item.name].push({
                         subject: subject || "---",
                         syllabus: syllabus || "---"
                     });
@@ -543,29 +583,14 @@
             }
         });
 
-        // 2. Block 2: 6th to 12th
-        // Sheet Row 67 is index 66 (Header)
-        // Sheet Rows 69 to 82 are indices 68 to 81 (Data)
-        const block2Config = [
-            { name: "6th",  subCol: 0, sylCol: 1 },  // Cols A, B
-            { name: "7th",  subCol: 2, sylCol: 3 },  // Cols C, D
-            { name: "8th",  subCol: 4, sylCol: 5 },  // Cols E, F
-            { name: "9th",  subCol: 6, sylCol: 7 },  // Cols G, H
-            { name: "10th", subCol: 8, sylCol: 9 },  // Cols I, J
-            { name: "11th", subCol: 10, sylCol: 11 },// Cols K, L
-            { name: "12th", subCol: 12, sylCol: 13 } // Cols M, N
-        ];
+        // 5. Parse Block 2: 6th to 12th (Data starts 2 rows below header, exactly 14 rows to Row 82)
+        block2.forEach(item => {
+            parsedSyllabusData[item.name] = [];
+            const startRow = sixthRowIdx + 2; // Row 69
+            const endRow = sixthRowIdx + 15;  // Strictly Row 82
 
-        block2Config.forEach(item => {
-            // Read header from Row 67 (index 66)
-            const headerVal = getVal(66, item.sylCol) || getVal(66, item.subCol);
-            const className = headerVal ? cleanClassName(headerVal) : item.name;
-            parsedSyllabusData[className] = [];
-
-            // STRICT HARD STOP AT ROW 82 (INDEX 81)
-            for (let r = 68; r <= 81; r++) {
+            for (let r = startRow; r <= endRow; r++) {
                 if (r >= matrix.length) break;
-
                 const subject = getVal(r, item.subCol);
                 const syllabus = getVal(r, item.sylCol);
                 const subLower = subject.toLowerCase();
@@ -573,7 +598,7 @@
                 if (subLower === "class" || subLower === "subject" || subLower === "syllabus") continue;
 
                 if (subject !== "" || syllabus !== "") {
-                    parsedSyllabusData[className].push({
+                    parsedSyllabusData[item.name].push({
                         subject: subject || "---",
                         syllabus: syllabus || "---"
                     });
