@@ -346,9 +346,9 @@
                 }
             }
 
-            // Attempt 2: Fallback to CSV export
-            if (!matrix || matrix.length < 5) {
-                console.warn("GViz returned empty or blocked. Switching to CSV fallback...");
+            // Attempt 2: Fallback to direct CSV export
+            if (!matrix || matrix.length < 15) {
+                console.warn("Switching to direct CSV fetch...");
                 const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
                 const csvResp = await fetch(csvUrl);
                 const csvText = await csvResp.text();
@@ -356,10 +356,10 @@
             }
 
             if (!matrix || matrix.length === 0) {
-                throw new Error("Unable to retrieve sheet rows. Please verify permissions.");
+                throw new Error("Unable to retrieve sheet data.");
             }
 
-            console.log(`Successfully parsed sheet matrix: ${matrix.length} rows.`);
+            console.log(`Loaded spreadsheet with ${matrix.length} rows.`);
 
             extractHeaderMetadata();
             parseDateSheet();
@@ -371,7 +371,7 @@
             errorContainer.innerHTML = `
                 <tr><td colspan="2" style="color:red; text-align:center; padding: 20px;">
                     <b>Data Load Error:</b> ${err.message}<br>
-                    <small>Check Console (F12) for detailed diagnostics.</small>
+                    <small>Check Console (F12) for detailed logs.</small>
                 </td></tr>
             `;
             document.getElementById('classSelect').innerHTML = '<option value="">No Classes Found</option>';
@@ -425,25 +425,32 @@
     }
 
     function extractHeaderMetadata() {
-        // B1: Date Sheet Exam Name, F1: Session
+        // Date Sheet Header (Row 1)
         const b1 = getVal(0, 1);
         if (b1) examNameDatesheet = b1;
 
         const f1 = getVal(0, 5);
         if (f1) sessionYear = f1;
 
-        // B50: Syllabus Exam Name (Row 50 -> index 49)
-        const b50 = getVal(49, 1);
-        if (b50) {
-            examNameSyllabus = b50;
-        } else {
-            examNameSyllabus = examNameDatesheet;
+        // Syllabus Header: Search dynamically for "Test/Exam Name" cell
+        let foundSyllabusExam = false;
+        for (let r = 20; r < matrix.length; r++) {
+            const label = getVal(r, 0).toLowerCase();
+            if (label.includes("test") || label.includes("exam name")) {
+                examNameSyllabus = getVal(r, 1) || examNameDatesheet;
+                foundSyllabusExam = true;
+                break;
+            }
+        }
+        if (!foundSyllabusExam) {
+            examNameSyllabus = getVal(49, 1) || examNameDatesheet;
         }
     }
 
     function parseDateSheet() {
         parsedDatesheetData = {};
 
+        // Find class header row around row 2 (indices 0 to 3)
         let headerRowIdx = 1;
         for (let r = 0; r <= 3; r++) {
             for (let c = 1; c <= 15; c++) {
@@ -467,7 +474,7 @@
             }
         }
 
-        // Minor exams: A4:A5 (Dates), B4:P5 (Subjects) -> Indices 3 & 4
+        // Minor exams: Rows 4 & 5 (indices 3 & 4)
         for (let r = 3; r <= 4; r++) {
             const date = getVal(r, 0);
             if (!date) continue;
@@ -480,7 +487,7 @@
             }
         }
 
-        // Major exams: A7:A12 (Dates), B7:P12 (Subjects) -> Indices 6 to 11
+        // Major exams: Rows 7 to 12 (indices 6 to 11)
         for (let r = 6; r <= 11; r++) {
             const date = getVal(r, 0);
             if (!date) continue;
@@ -494,78 +501,86 @@
         }
     }
 
-    // Exact parsing as specified:
-    // Block 1 (Nursery - 5th): Rows 53 to 66 (indices 52 to 65)
-    // Block 2 (6th - 12th): Rows 69 to 82 (indices 68 to 81)
+    // Dynamic Syllabus Parser based on sheet structure
     function parseSyllabus() {
         parsedSyllabusData = {};
 
-        const block1Classes = [
-            { name: "Nursery", subCol: 0, sylCol: 1 },  // A, B
-            { name: "LKG",     subCol: 2, sylCol: 3 },  // C, D
-            { name: "UKG",     subCol: 4, sylCol: 5 },  // E, F
-            { name: "1st",     subCol: 6, sylCol: 7 },  // G, H
-            { name: "2nd",     subCol: 8, sylCol: 9 },  // I, J
-            { name: "3rd",     subCol: 10, sylCol: 11 },// K, L
-            { name: "4th",     subCol: 12, sylCol: 13 },// M, N
-            { name: "5th",     subCol: 14, sylCol: 15 } // O, P
-        ];
-
-        // Read dynamic class names from row 51 (index 50) if present
-        block1Classes.forEach(item => {
-            const headerName = getVal(50, item.sylCol) || getVal(50, item.subCol);
-            const className = headerName ? cleanClassName(headerName) : item.name;
-            parsedSyllabusData[className] = [];
-
-            // Rows 53 to 66 -> indices 52 to 65
-            for (let r = 52; r <= 65; r++) {
-                const subject = getVal(r, item.subCol);
-                const syllabus = getVal(r, item.sylCol);
-                const subLower = subject.toLowerCase();
-
-                if (
-                    (subject !== "" || syllabus !== "") &&
-                    !subLower.startsWith("class") &&
-                    !subLower.startsWith("subject") &&
-                    !subLower.startsWith("syllabus")
-                ) {
-                    parsedSyllabusData[className].push({ subject, syllabus });
-                }
-            }
+        // Predefined ordered class names to match standard sequence
+        const standardClasses = ["Nursery", "LKG", "UKG", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th"];
+        standardClasses.forEach(cls => {
+            parsedSyllabusData[cls] = [];
         });
 
-        const block2Classes = [
-            { name: "6th",  subCol: 0, sylCol: 1 },  // A, B
-            { name: "7th",  subCol: 2, sylCol: 3 },  // C, D
-            { name: "8th",  subCol: 4, sylCol: 5 },  // E, F
-            { name: "9th",  subCol: 6, sylCol: 7 },  // G, H
-            { name: "10th", subCol: 8, sylCol: 9 },  // I, J
-            { name: "11th", subCol: 10, sylCol: 11 },// K, L
-            { name: "12th", subCol: 12, sylCol: 13 } // M, N
-        ];
-
-        // Read dynamic class names from row 67 (index 66) if present
-        block2Classes.forEach(item => {
-            const headerName = getVal(66, item.sylCol) || getVal(66, item.subCol);
-            const className = headerName ? cleanClassName(headerName) : item.name;
-            parsedSyllabusData[className] = [];
-
-            // Rows 69 to 82 -> indices 68 to 81
-            for (let r = 68; r <= 81; r++) {
-                const subject = getVal(r, item.subCol);
-                const syllabus = getVal(r, item.sylCol);
-                const subLower = subject.toLowerCase();
-
-                if (
-                    (subject !== "" || syllabus !== "") &&
-                    !subLower.startsWith("class") &&
-                    !subLower.startsWith("subject") &&
-                    !subLower.startsWith("syllabus")
-                ) {
-                    parsedSyllabusData[className].push({ subject, syllabus });
+        // 1. Locate Nursery header row (Primary block)
+        let nurseryRowIdx = -1;
+        for (let r = 25; r < matrix.length; r++) {
+            for (let c = 0; c < 4; c++) {
+                if (getVal(r, c).toLowerCase().includes("nursery")) {
+                    nurseryRowIdx = r;
+                    break;
                 }
             }
-        });
+            if (nurseryRowIdx !== -1) break;
+        }
+
+        // 2. Locate 6th header row (Middle/Senior block)
+        let sixthRowIdx = -1;
+        for (let r = 40; r < matrix.length; r++) {
+            for (let c = 0; c < 4; c++) {
+                const val = getVal(r, c).toLowerCase();
+                if (val.includes("6th") || val === "vi") {
+                    sixthRowIdx = r;
+                    break;
+                }
+            }
+            if (sixthRowIdx !== -1) break;
+        }
+
+        // Fallbacks if not auto-detected
+        if (nurseryRowIdx === -1) nurseryRowIdx = 50; // Row 51
+        if (sixthRowIdx === -1) sixthRowIdx = 66;    // Row 67
+
+        // Parse Block 1: Nursery to 5th (8 classes: columns A to P, 2 columns per class)
+        const block1Names = ["Nursery", "LKG", "UKG", "1st", "2nd", "3rd", "4th", "5th"];
+        const b1End = sixthRowIdx > nurseryRowIdx ? (sixthRowIdx - 1) : (nurseryRowIdx + 15);
+        
+        parseSyllabusGrid(nurseryRowIdx, nurseryRowIdx + 2, b1End, 16, block1Names);
+
+        // Parse Block 2: 6th to 12th (7 classes: columns A to N, 2 columns per class)
+        const block2Names = ["6th", "7th", "8th", "9th", "10th", "11th", "12th"];
+        parseSyllabusGrid(sixthRowIdx, sixthRowIdx + 2, Math.min(sixthRowIdx + 16, matrix.length - 1), 14, block2Names);
+    }
+
+    function parseSyllabusGrid(headerRowIdx, startRowIdx, endRowIdx, maxCols, defaultNames) {
+        let classIndex = 0;
+        for (let c = 0; c < maxCols; c += 2) {
+            // Check Col c+1 (where class name is shown in the screenshot, e.g. UKG in column 5)
+            let className = getVal(headerRowIdx, c + 1) || getVal(headerRowIdx, c) || defaultNames[classIndex];
+            className = cleanClassName(className);
+            classIndex++;
+
+            if (!parsedSyllabusData[className]) {
+                parsedSyllabusData[className] = [];
+            }
+
+            for (let r = startRowIdx; r <= endRowIdx; r++) {
+                const subject = getVal(r, c);
+                const syllabus = getVal(r, c + 1);
+
+                // Stop row if it encounters another header section
+                if (subject.toLowerCase() === "class" || subject.toLowerCase() === "subject") {
+                    continue;
+                }
+
+                // If subject has text, add it (even if syllabus is currently blank)
+                if (subject !== "" || syllabus !== "") {
+                    parsedSyllabusData[className].push({
+                        subject: subject || "---",
+                        syllabus: syllabus || "---"
+                    });
+                }
+            }
+        }
     }
 
     function populateDropdown() {
@@ -691,12 +706,15 @@
             }
 
             items.forEach(item => {
-                let formattedSyllabus = item.syllabus
-                    .split('\n')
-                    .map(line => line.trim())
-                    .filter(line => line.length > 0)
-                    .map(line => line.startsWith('•') || line.startsWith('-') ? line : `• ${line}`)
-                    .join('\n');
+                let formattedSyllabus = item.syllabus;
+                if (formattedSyllabus !== "---") {
+                    formattedSyllabus = formattedSyllabus
+                        .split('\n')
+                        .map(line => line.trim())
+                        .filter(line => line.length > 0)
+                        .map(line => line.startsWith('•') || line.startsWith('-') ? line : `• ${line}`)
+                        .join('\n');
+                }
 
                 tbody.innerHTML += `
                     <tr>
