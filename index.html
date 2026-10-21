@@ -307,254 +307,283 @@
         </div>
     </div>
 
-    <script>
-        // Target Sheet Details
-        const SHEET_ID = '1Sy5uBZkjKpGnLdZp2sFuhFORhO1fRqCswfNYHRl73PM';
-        const GID = '1383668039';
-        const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}`;
+   <script>
+    // Sheet Details
+    const SHEET_ID = '1Sy5uBZkjKpGnLdZp2sFuhFORhO1fRqCswfNYHRl73PM';
+    const SHEET_NAME = encodeURIComponent('DS n Notice');
+    const GID = '1383668039';
+    
+    // Explicitly ask for the specific tab name and gid
+    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}&gid=${GID}`;
 
-        let currentMode = 'datesheet'; // 'datesheet' or 'syllabus'
-        let rawRows = [];
-        let examName = "Examination";
-        let sessionYear = "";
+    let currentMode = 'datesheet';
+    let rawRows = [];
+    let examName = "Examination";
+    let sessionYear = "";
 
-        // Parsed Data Stores
-        let parsedSyllabusData = {};
-        let parsedDatesheetData = {}; // structure: { className: { minor: [{date, subject}], major: [{date, subject}] } }
+    let parsedSyllabusData = {};
+    let parsedDatesheetData = {};
 
-        // Fetch Google Sheet Data
-        async function fetchSheetData() {
-            try {
-                const response = await fetch(SHEET_URL);
-                const text = await response.text();
-                const jsonString = text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1);
-                const data = JSON.parse(jsonString);
+    async function fetchSheetData() {
+        try {
+            const response = await fetch(SHEET_URL);
+            const text = await response.text();
 
-                rawRows = data.table.rows;
-                
-                extractHeaderMetadata();
-                parseDateSheet();
-                parseSyllabus();
-                populateDropdown();
-            } catch (error) {
-                console.error("Error loading spreadsheet data:", error);
-                document.getElementById('tableBody').innerHTML = `
-                    <tr><td colspan="2" style="color:red; text-align:center;">Failed to fetch sheet data. Verify network and access permissions.</td></tr>
-                `;
+            // Check if sheet returned Google login HTML (permissions issue)
+            if (text.includes("<!DOCTYPE") || text.includes("<html")) {
+                throw new Error("Spreadsheet is not public. Please set 'General access' to 'Anyone with the link can view' in Google Sheets.");
             }
-        }
 
-        // Helper to safely get cell formatted or raw text (0-indexed)
-        function getCellVal(r, c) {
-            if (rawRows[r] && rawRows[r].c && rawRows[r].c[c]) {
-                const cell = rawRows[r].c[c];
-                if (cell.f !== null && cell.f !== undefined) return String(cell.f).trim();
-                if (cell.v !== null && cell.v !== undefined) return String(cell.v).trim();
+            const jsonStart = text.indexOf("{");
+            const jsonEnd = text.lastIndexOf("}");
+            if (jsonStart === -1 || jsonEnd === -1) {
+                throw new Error("Invalid response format received from Google Sheets.");
             }
-            return "";
+
+            const jsonString = text.substring(jsonStart, jsonEnd + 1);
+            const data = JSON.parse(jsonString);
+
+            if (!data.table || !data.table.rows) {
+                throw new Error("No table rows found in Google Sheet response.");
+            }
+
+            rawRows = data.table.rows;
+            console.log(`Loaded ${rawRows.length} rows successfully.`);
+
+            extractHeaderMetadata();
+            parseDateSheet();
+            parseSyllabus();
+            populateDropdown();
+        } catch (error) {
+            console.error("Error loading spreadsheet data:", error);
+            document.getElementById('tableBody').innerHTML = `
+                <tr><td colspan="2" style="color:red; text-align:center; padding: 15px;">
+                    <b>Error:</b> ${error.message}
+                </td></tr>
+            `;
+            document.getElementById('classSelect').innerHTML = '<option value="">No Classes Found</option>';
         }
+    }
 
-        // Extract B1: Exam Name, F1: Session
-        function extractHeaderMetadata() {
-            const b1 = getCellVal(0, 1); // Row 1, Col B
-            if (b1) examName = b1;
-
-            const f1 = getCellVal(0, 5); // Row 1, Col F
-            if (f1) sessionYear = f1;
+    // Safely retrieve formatted text (.f) or raw value (.v) from any cell
+    function getCellVal(r, c) {
+        if (rawRows[r] && rawRows[r].c && rawRows[r].c[c]) {
+            const cell = rawRows[r].c[c];
+            if (cell.f !== null && cell.f !== undefined) return String(cell.f).trim();
+            if (cell.v !== null && cell.v !== undefined) return String(cell.v).trim();
         }
+        return "";
+    }
 
-        // Clean class names consistently
-        function normalizeClassName(str) {
-            return str.replace(/^CLASS[\s-:]*/i, '').trim();
-        }
+    function normalizeClassName(str) {
+        return str.replace(/^CLASS[\s-:]*/i, '').trim();
+    }
 
-        // Parse Date Sheet: Rows 1 to 12 (indices 0 to 11)
-        function parseDateSheet() {
-            parsedDatesheetData = {};
+    // Extract Exam Name (B1 / cell [0,1]) and Session (F1 / cell [0,5])
+    function extractHeaderMetadata() {
+        const b1 = getCellVal(0, 1);
+        if (b1) examName = b1;
 
-            // Classes are in B2 to P2 (Row index 1, Cols 1 to 15)
-            const classCols = {};
+        const f1 = getCellVal(0, 5);
+        if (f1) sessionYear = f1;
+    }
+
+    // Parse Datesheet: searches row 1..3 for class headers (Nursery, LKG, etc.)
+    function parseDateSheet() {
+        parsedDatesheetData = {};
+
+        // Auto-detect class header row around row 2 (indices 0 to 4)
+        let headerRowIdx = -1;
+        for (let r = 0; r <= 3; r++) {
             for (let c = 1; c <= 15; c++) {
-                let clsName = getCellVal(1, c);
-                if (clsName) {
-                    clsName = normalizeClassName(clsName);
-                    classCols[c] = clsName;
-                    if (!parsedDatesheetData[clsName]) {
-                        parsedDatesheetData[clsName] = { minor: [], major: [] };
-                    }
+                const val = getCellVal(r, c).toLowerCase();
+                if (val.includes("nur") || val.includes("1st") || val.includes("6th")) {
+                    headerRowIdx = r;
+                    break;
                 }
             }
+            if (headerRowIdx !== -1) break;
+        }
 
-            // Minor Exams: Dates in A4:A5 (Indices 3:4), Subjects in B4:P5 (Indices 3:4)
-            for (let r = 3; r <= 4; r++) {
-                const date = getCellVal(r, 0);
-                if (!date) continue;
-                for (let c in classCols) {
-                    const cls = classCols[c];
-                    const subject = getCellVal(r, parseInt(c));
-                    if (subject) {
-                        parsedDatesheetData[cls].minor.push({ date, subject });
-                    }
-                }
-            }
+        if (headerRowIdx === -1) headerRowIdx = 1; // fallback to row index 1 (Sheet row 2)
 
-            // Major Exams: Dates in A7:A12 (Indices 6:11), Subjects in B7:P12 (Indices 6:11)
-            for (let r = 6; r <= 11; r++) {
-                const date = getCellVal(r, 0);
-                if (!date) continue;
-                for (let c in classCols) {
-                    const cls = classCols[c];
-                    const subject = getCellVal(r, parseInt(c));
-                    if (subject) {
-                        parsedDatesheetData[cls].major.push({ date, subject });
-                    }
+        const classCols = {};
+        for (let c = 1; c <= 15; c++) {
+            let clsName = getCellVal(headerRowIdx, c);
+            if (clsName) {
+                clsName = normalizeClassName(clsName);
+                classCols[c] = clsName;
+                if (!parsedDatesheetData[clsName]) {
+                    parsedDatesheetData[clsName] = { minor: [], major: [] };
                 }
             }
         }
 
-        // Parse Syllabus: A50:P82 (Indices 49 to 81)
-        function parseSyllabus() {
-            parsedSyllabusData = {};
-
-            // Block 1: Nursery to 5th (Row 51 header -> Index 50, Subject/Syllabus header -> Index 51, Data -> Rows 53-66 / Indices 52-65, Cols 0-15)
-            parseSyllabusBlock(50, 52, 65, 16);
-
-            // Block 2: 6th to 12th (Row 67 header -> Index 66, Subject/Syllabus header -> Index 67, Data -> Rows 69-82 / Indices 68-81, Cols 0-13)
-            parseSyllabusBlock(66, 68, 81, 14);
-        }
-
-        function parseSyllabusBlock(classHeaderRowIdx, startRowIdx, endRowIdx, maxColIndex) {
-            if (!rawRows[classHeaderRowIdx]) return;
-
-            for (let c = 0; c < maxColIndex; c += 2) {
-                let className = getCellVal(classHeaderRowIdx, c + 1) || getCellVal(classHeaderRowIdx, c);
-                if (!className) continue;
-                className = normalizeClassName(className);
-
-                if (!parsedSyllabusData[className]) {
-                    parsedSyllabusData[className] = [];
-                }
-
-                for (let r = startRowIdx; r <= endRowIdx; r++) {
-                    const subject = getCellVal(r, c);
-                    const syllabus = getCellVal(r, c + 1);
-                    const subLower = subject.toLowerCase();
-
-                    // Discard blank and structural repeated headers
-                    if (
-                        (subject !== "" || syllabus !== "") &&
-                        !subLower.startsWith("class") &&
-                        !subLower.startsWith("subject") &&
-                        !subLower.startsWith("syllabus")
-                    ) {
-                        parsedSyllabusData[className].push({
-                            subject: subject,
-                            syllabus: syllabus
-                        });
-                    }
+        // Minor Exams: Row indices 3 & 4 (Rows 4 & 5)
+        for (let r = 3; r <= 4; r++) {
+            const date = getCellVal(r, 0);
+            if (!date) continue;
+            for (let c in classCols) {
+                const cls = classCols[c];
+                const subject = getCellVal(r, parseInt(c));
+                if (subject) {
+                    parsedDatesheetData[cls].minor.push({ date, subject });
                 }
             }
         }
 
-        // Populate Dropdown
-        function populateDropdown() {
-            const select = document.getElementById('classSelect');
-            const previousVal = select.value;
-            select.innerHTML = '';
+        // Major Exams: Row indices 6 to 11 (Rows 7 to 12)
+        for (let r = 6; r <= 11; r++) {
+            const date = getCellVal(r, 0);
+            if (!date) continue;
+            for (let c in classCols) {
+                const cls = classCols[c];
+                const subject = getCellVal(r, parseInt(c));
+                if (subject) {
+                    parsedDatesheetData[cls].major.push({ date, subject });
+                }
+            }
+        }
+    }
 
-            const dataSource = currentMode === 'datesheet' ? parsedDatesheetData : parsedSyllabusData;
-            const classes = Object.keys(dataSource);
+    // Parse Syllabus: Finds Nursery block and 6th block dynamically
+    function parseSyllabus() {
+        parsedSyllabusData = {};
 
-            if (classes.length === 0) {
-                select.innerHTML = '<option value="">No Classes Found</option>';
+        let nurseryRowIdx = -1;
+        let sixthRowIdx = -1;
+
+        // Scan rows 30 to 80 for where the Class headers actually start
+        for (let r = 30; r < rawRows.length; r++) {
+            for (let c = 0; c < 16; c++) {
+                const val = getCellVal(r, c).toLowerCase();
+                if (nurseryRowIdx === -1 && (val.includes("nursery") || val === "nur")) {
+                    nurseryRowIdx = r;
+                }
+                if (sixthRowIdx === -1 && (val.includes("6th") || val === "vi")) {
+                    sixthRowIdx = r;
+                }
+            }
+        }
+
+        // Fallbacks if not auto-detected: Row 51 is index 50, Row 67 is index 66
+        if (nurseryRowIdx === -1) nurseryRowIdx = 50;
+        if (sixthRowIdx === -1) sixthRowIdx = 66;
+
+        // Block 1: Nursery to 5th (Data starts 2 rows below header, ends right before 6th block)
+        const b1End = sixthRowIdx > nurseryRowIdx ? sixthRowIdx - 1 : nurseryRowIdx + 15;
+        parseSyllabusBlock(nurseryRowIdx, nurseryRowIdx + 2, b1End, 16);
+
+        // Block 2: 6th to 12th
+        parseSyllabusBlock(sixthRowIdx, sixthRowIdx + 2, Math.min(sixthRowIdx + 16, rawRows.length - 1), 14);
+    }
+
+    function parseSyllabusBlock(classHeaderRowIdx, startRowIdx, endRowIdx, maxColIndex) {
+        if (!rawRows[classHeaderRowIdx]) return;
+
+        for (let c = 0; c < maxColIndex; c += 2) {
+            let className = getCellVal(classHeaderRowIdx, c + 1) || getCellVal(classHeaderRowIdx, c);
+            if (!className) continue;
+            className = normalizeClassName(className);
+
+            if (!parsedSyllabusData[className]) {
+                parsedSyllabusData[className] = [];
+            }
+
+            for (let r = startRowIdx; r <= endRowIdx; r++) {
+                const subject = getCellVal(r, c);
+                const syllabus = getCellVal(r, c + 1);
+                const subLower = subject.toLowerCase();
+
+                if (
+                    (subject !== "" || syllabus !== "") &&
+                    !subLower.startsWith("class") &&
+                    !subLower.startsWith("subject") &&
+                    !subLower.startsWith("syllabus")
+                ) {
+                    parsedSyllabusData[className].push({ subject, syllabus });
+                }
+            }
+        }
+    }
+
+    function populateDropdown() {
+        const select = document.getElementById('classSelect');
+        const previousVal = select.value;
+        select.innerHTML = '';
+
+        const dataSource = currentMode === 'datesheet' ? parsedDatesheetData : parsedSyllabusData;
+        const classes = Object.keys(dataSource);
+
+        if (classes.length === 0) {
+            select.innerHTML = '<option value="">No Classes Found</option>';
+            renderCard();
+            return;
+        }
+
+        classes.forEach((cls) => {
+            const opt = document.createElement('option');
+            opt.value = cls;
+            opt.innerText = `Class ${cls}`;
+            select.appendChild(opt);
+        });
+
+        if (previousVal && classes.includes(previousVal)) {
+            select.value = previousVal;
+        } else {
+            select.selectedIndex = 0;
+        }
+
+        renderCard();
+    }
+
+    function switchMode(mode) {
+        currentMode = mode;
+        document.getElementById('btnTabDatesheet').className = mode === 'datesheet' ? 'active' : '';
+        document.getElementById('btnTabSyllabus').className = mode === 'syllabus' ? 'active' : '';
+
+        const content = document.getElementById('cardContent');
+        if (mode === 'syllabus') {
+            content.classList.add('syllabus-mode');
+        } else {
+            content.classList.remove('syllabus-mode');
+        }
+
+        populateDropdown();
+    }
+
+    function renderCard() {
+        const selectedClass = document.getElementById('classSelect').value;
+        const tbody = document.getElementById('tableBody');
+        const thCol1 = document.getElementById('thCol1');
+        const thCol2 = document.getElementById('thCol2');
+        const banner = document.getElementById('bannerLabel');
+
+        document.getElementById('selectedClassLabel').innerText = `Class : ${selectedClass || '---'}`;
+        tbody.innerHTML = '';
+
+        if (!selectedClass) {
+            tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; padding: 15px;">No class selected.</td></tr>`;
+            return;
+        }
+
+        if (currentMode === 'datesheet') {
+            thCol1.innerText = "Date";
+            thCol2.innerText = "Subject";
+            banner.innerText = `Date Sheet: ${examName}`;
+
+            const data = parsedDatesheetData[selectedClass] || { minor: [], major: [] };
+            const isMajorMinorApplicable = /half\s*yearly|annual/i.test(examName);
+
+            if (data.minor.length === 0 && data.major.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; padding: 15px;">No date sheet available for Class ${selectedClass}.</td></tr>`;
                 return;
             }
 
-            classes.forEach((cls) => {
-                const opt = document.createElement('option');
-                opt.value = cls;
-                opt.innerText = `Class ${cls}`;
-                select.appendChild(opt);
-            });
-
-            if (previousVal && classes.includes(previousVal)) {
-                select.value = previousVal;
-            } else {
-                select.selectedIndex = 0;
-            }
-
-            renderCard();
-        }
-
-        // Switch Mode between Date Sheet & Syllabus
-        function switchMode(mode) {
-            currentMode = mode;
-            document.getElementById('btnTabDatesheet').className = mode === 'datesheet' ? 'active' : '';
-            document.getElementById('btnTabSyllabus').className = mode === 'syllabus' ? 'active' : '';
-
-            const content = document.getElementById('cardContent');
-            if (mode === 'syllabus') {
-                content.classList.add('syllabus-mode');
-            } else {
-                content.classList.remove('syllabus-mode');
-            }
-
-            populateDropdown();
-        }
-
-        // Render Card Data
-        function renderCard() {
-            const selectedClass = document.getElementById('classSelect').value;
-            const tbody = document.getElementById('tableBody');
-            const thCol1 = document.getElementById('thCol1');
-            const thCol2 = document.getElementById('thCol2');
-            const banner = document.getElementById('bannerLabel');
-
-            document.getElementById('selectedClassLabel').innerText = `Class : ${selectedClass}`;
-            tbody.innerHTML = '';
-
-            if (currentMode === 'datesheet') {
-                thCol1.innerText = "Date";
-                thCol2.innerText = "Subject";
-                banner.innerText = `Date Sheet: ${examName}`;
-
-                const data = parsedDatesheetData[selectedClass] || { minor: [], major: [] };
-                const isMajorMinorApplicable = /half\s*yearly|annual/i.test(examName);
-
-                if (data.minor.length === 0 && data.major.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; padding: 15px;">No date sheet available.</td></tr>`;
-                    return;
-                }
-
-                // If Half Yearly or Annual, render with Minor/Major section subheaders
-                if (isMajorMinorApplicable) {
-                    if (data.minor.length > 0) {
-                        tbody.innerHTML += `<tr class="section-header-row"><td colspan="2">MINOR EXAMS</td></tr>`;
-                        data.minor.forEach(item => {
-                            tbody.innerHTML += `
-                                <tr>
-                                    <td class="col-left-td">${item.date}</td>
-                                    <td class="col-right-td">${item.subject}</td>
-                                </tr>
-                            `;
-                        });
-                    }
-
-                    if (data.major.length > 0) {
-                        tbody.innerHTML += `<tr class="section-header-row"><td colspan="2">MAJOR EXAMS</td></tr>`;
-                        data.major.forEach(item => {
-                            tbody.innerHTML += `
-                                <tr>
-                                    <td class="col-left-td">${item.date}</td>
-                                    <td class="col-right-td">${item.subject}</td>
-                                </tr>
-                            `;
-                        });
-                    }
-                } else {
-                    // For PT1, PT2, PT3, PT4 - simple combined table without subheaders
-                    const combined = [...data.minor, ...data.major];
-                    combined.forEach(item => {
+            if (isMajorMinorApplicable) {
+                if (data.minor.length > 0) {
+                    tbody.innerHTML += `<tr class="section-header-row"><td colspan="2">MINOR EXAMS</td></tr>`;
+                    data.minor.forEach(item => {
                         tbody.innerHTML += `
                             <tr>
                                 <td class="col-left-td">${item.date}</td>
@@ -564,62 +593,81 @@
                     });
                 }
 
-            } else {
-                // Syllabus Mode
-                thCol1.innerText = "Subject";
-                thCol2.innerText = "Syllabus";
-                banner.innerText = `Syllabus: ${examName}`;
-
-                const items = parsedSyllabusData[selectedClass] || [];
-
-                if (items.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; padding: 15px;">No syllabus details entered.</td></tr>`;
-                    return;
+                if (data.major.length > 0) {
+                    tbody.innerHTML += `<tr class="section-header-row"><td colspan="2">MAJOR EXAMS</td></tr>`;
+                    data.major.forEach(item => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td class="col-left-td">${item.date}</td>
+                                <td class="col-right-td">${item.subject}</td>
+                            </tr>
+                        `;
+                    });
                 }
-
-                items.forEach(item => {
-                    let formattedSyllabus = item.syllabus
-                        .split('\n')
-                        .map(line => line.trim())
-                        .filter(line => line.length > 0)
-                        .map(line => line.startsWith('•') || line.startsWith('-') ? line : `• ${line}`)
-                        .join('\n');
-
+            } else {
+                const combined = [...data.minor, ...data.major];
+                combined.forEach(item => {
                     tbody.innerHTML += `
                         <tr>
-                            <td class="col-left-td">${item.subject || '---'}</td>
-                            <td class="col-right-td">${formattedSyllabus}</td>
+                            <td class="col-left-td">${item.date}</td>
+                            <td class="col-right-td">${item.subject}</td>
                         </tr>
                     `;
                 });
             }
-        }
 
-        // Download PNG Image
-        function downloadImage() {
-            const container = document.getElementById('cardContainer');
-            const selectedClass = document.getElementById('classSelect').value;
-            const prefix = currentMode === 'datesheet' ? 'DateSheet' : 'Syllabus';
+        } else {
+            thCol1.innerText = "Subject";
+            thCol2.innerText = "Syllabus";
+            banner.innerText = `Syllabus: ${examName}`;
 
-            html2canvas(container, {
-                scale: 2,
-                useCORS: true,
-                backgroundColor: "#ffffff"
-            }).then(canvas => {
-                const imageURI = canvas.toDataURL("image/png");
-                const link = document.createElement("a");
-                link.download = `${prefix}_Class_${selectedClass}.png`;
-                link.href = imageURI;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }).catch(err => {
-                console.error("Image export failed:", err);
-                alert("Could not generate image. Please try again.");
+            const items = parsedSyllabusData[selectedClass] || [];
+
+            if (items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; padding: 15px;">No syllabus details entered for Class ${selectedClass}.</td></tr>`;
+                return;
+            }
+
+            items.forEach(item => {
+                let formattedSyllabus = item.syllabus
+                    .split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line.length > 0)
+                    .map(line => line.startsWith('•') || line.startsWith('-') ? line : `• ${line}`)
+                    .join('\n');
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="col-left-td">${item.subject || '---'}</td>
+                        <td class="col-right-td">${formattedSyllabus}</td>
+                    </tr>
+                `;
             });
         }
+    }
 
-        window.addEventListener('DOMContentLoaded', fetchSheetData);
-    </script>
-</body>
-</html>
+    function downloadImage() {
+        const container = document.getElementById('cardContainer');
+        const selectedClass = document.getElementById('classSelect').value;
+        const prefix = currentMode === 'datesheet' ? 'DateSheet' : 'Syllabus';
+
+        html2canvas(container, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: "#ffffff"
+        }).then(canvas => {
+            const imageURI = canvas.toDataURL("image/png");
+            const link = document.createElement("a");
+            link.download = `${prefix}_Class_${selectedClass}.png`;
+            link.href = imageURI;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }).catch(err => {
+            console.error("Image export failed:", err);
+            alert("Could not generate image. Please try again.");
+        });
+    }
+
+    window.addEventListener('DOMContentLoaded', fetchSheetData);
+</script>
