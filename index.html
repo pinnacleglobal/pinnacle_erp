@@ -503,10 +503,10 @@
 
 // Exact-Coordinate Syllabus Parser with strict Row 69–82 limits
     // Bulletproof Syllabus Parser
+   // Bulletproof Syllabus Parser that anchors to "Test/Exam Name"
     function parseSyllabus() {
         parsedSyllabusData = {};
 
-        // 1. Fixed, permanent class names (prevents accidental renaming to "English" or "Hindi")
         const block1 = [
             { name: "Nursery", subCol: 0, sylCol: 1 },  // A, B
             { name: "LKG",     subCol: 2, sylCol: 3 },  // C, D
@@ -528,45 +528,33 @@
             { name: "12th", subCol: 12, sylCol: 13 } // M, N
         ];
 
-        // 2. Find the exact row containing "Nursery" (Row 51 in the sheet)
-        let nurseryRowIdx = -1;
-        for (let r = 0; r < matrix.length; r++) {
-            for (let c = 0; c < 4; c++) {
-                const val = getVal(r, c).toLowerCase();
-                if (val === "nursery" || val.includes("nursery")) {
-                    nurseryRowIdx = r;
-                    break;
-                }
+        // 1. Locate the "Test/Exam Name" cell to definitively jump past the Date Sheet
+        let testExamRowIdx = -1;
+        for (let r = 15; r < matrix.length; r++) {
+            const val = getVal(r, 0).toLowerCase();
+            if (val.includes("test") || val.includes("exam name")) {
+                testExamRowIdx = r;
+                break;
             }
-            if (nurseryRowIdx !== -1) break;
         }
 
-        // Fallback to row 51 (index 50) if not found
-        if (nurseryRowIdx === -1) nurseryRowIdx = 50;
+        // If not found, default to Row 50 (index 49)
+        if (testExamRowIdx === -1) testExamRowIdx = 49;
 
-        // 3. Find the exact row containing "6th" in columns A or B (Row 67 in the sheet)
-        let sixthRowIdx = -1;
-        for (let r = nurseryRowIdx + 5; r < matrix.length; r++) {
-            for (let c = 0; c < 4; c++) {
-                const val = getVal(r, c).toLowerCase();
-                if (val === "6th" || val.includes("6th") || val === "vi") {
-                    sixthRowIdx = r;
-                    break;
-                }
-            }
-            if (sixthRowIdx !== -1) break;
-        }
+        // Extract the syllabus exam title (cell B right next to "Test/Exam Name")
+        const sylExam = getVal(testExamRowIdx, 1);
+        if (sylExam) examNameSyllabus = sylExam;
 
-        // Fallback to row 67 (index 66) if not found
-        if (sixthRowIdx === -1) sixthRowIdx = nurseryRowIdx + 16;
+        // 2. Nursery to 5th Block:
+        // The Class header row (Nursery, LKG...) is 1 row below "Test/Exam Name" (Row 51)
+        const nurseryHeaderRowIdx = testExamRowIdx + 1;
+        // Data starts 2 rows below the class header (Row 53) and spans 14 rows (Row 66)
+        const b1Start = nurseryHeaderRowIdx + 2;
+        const b1End = nurseryHeaderRowIdx + 15;
 
-        // 4. Parse Block 1: Nursery to 5th (Data starts 2 rows below header, exactly 14 rows to Row 66)
         block1.forEach(item => {
             parsedSyllabusData[item.name] = [];
-            const startRow = nurseryRowIdx + 2; // Row 53
-            const endRow = nurseryRowIdx + 15;  // Row 66
-
-            for (let r = startRow; r <= endRow; r++) {
+            for (let r = b1Start; r <= b1End; r++) {
                 if (r >= matrix.length) break;
                 const subject = getVal(r, item.subCol);
                 const syllabus = getVal(r, item.sylCol);
@@ -583,13 +571,16 @@
             }
         });
 
-        // 5. Parse Block 2: 6th to 12th (Data starts 2 rows below header, exactly 14 rows to Row 82)
+        // 3. 6th to 12th Block:
+        // The Class header row for 6th to 12th is right after Row 66 (Row 67 -> b1End + 1)
+        const sixthHeaderRowIdx = b1End + 1;
+        // Data starts 2 rows below the header (Row 69) and runs for 14 rows, strictly ending at Row 82
+        const b2Start = sixthHeaderRowIdx + 2;
+        const b2End = sixthHeaderRowIdx + 15; // Row 82 (strictly capped)
+
         block2.forEach(item => {
             parsedSyllabusData[item.name] = [];
-            const startRow = sixthRowIdx + 2; // Row 69
-            const endRow = sixthRowIdx + 15;  // Strictly Row 82
-
-            for (let r = startRow; r <= endRow; r++) {
+            for (let r = b2Start; r <= b2End; r++) {
                 if (r >= matrix.length) break;
                 const subject = getVal(r, item.subCol);
                 const syllabus = getVal(r, item.sylCol);
