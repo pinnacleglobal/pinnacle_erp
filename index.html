@@ -307,142 +307,185 @@
         </div>
     </div>
 
-   <script>
-    // Sheet Details
+  <script>
     const SHEET_ID = '1Sy5uBZkjKpGnLdZp2sFuhFORhO1fRqCswfNYHRl73PM';
     const GID = '1383668039';
-    
-    // headers=0 ensures Row 1 is NOT swallowed as a column header
-    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}&headers=0`;
+    const SHEET_TAB_NAME = 'DS n Notice';
 
     let currentMode = 'datesheet';
-    let rawRows = [];
+    let matrix = []; // 2D array of grid cells: matrix[row][col]
     let examName = "Examination";
     let sessionYear = "";
 
     let parsedSyllabusData = {};
     let parsedDatesheetData = {};
 
+    // Dual-fetch strategy: Tries GViz with sheet name, falls back to direct CSV
     async function fetchSheetData() {
+        const errorContainer = document.getElementById('tableBody');
         try {
-            const response = await fetch(SHEET_URL);
-            const text = await response.text();
+            // Attempt 1: GViz endpoint explicitly requesting the sheet tab name
+            const gvizUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_TAB_NAME)}&headers=0`;
+            const resp = await fetch(gvizUrl);
+            const text = await resp.text();
 
-            if (text.includes("<!DOCTYPE") || text.includes("<html")) {
-                throw new Error("Spreadsheet is not public. Please ensure 'General access' is set to 'Anyone with the link can view'.");
+            if (text.includes("google.visualization.Query.setResponse")) {
+                const jsonStr = text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1);
+                const data = JSON.parse(jsonStr);
+
+                if (data.table && data.table.rows && data.table.rows.length > 0) {
+                    matrix = data.table.rows.map(row => {
+                        if (!row || !row.c) return [];
+                        return row.c.map(cell => {
+                            if (!cell) return "";
+                            if (cell.f !== null && cell.f !== undefined && String(cell.f).trim() !== "") return String(cell.f).trim();
+                            if (cell.v !== null && cell.v !== undefined && String(cell.v).trim() !== "") return String(cell.v).trim();
+                            return "";
+                        });
+                    });
+                }
             }
 
-            const jsonStart = text.indexOf("{");
-            const jsonEnd = text.lastIndexOf("}");
-            if (jsonStart === -1 || jsonEnd === -1) {
-                throw new Error("Invalid response format received from Google Sheets.");
+            // Attempt 2: If GViz returned empty or failed to load matrix, fallback to CSV export
+            if (!matrix || matrix.length < 5) {
+                console.warn("GViz returned empty or blocked. Switching to CSV fallback...");
+                const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
+                const csvResp = await fetch(csvUrl);
+                const csvText = await csvResp.text();
+                matrix = parseCSV(csvText);
             }
 
-            const jsonString = text.substring(jsonStart, jsonEnd + 1);
-            const data = JSON.parse(jsonString);
-
-            if (!data.table || !data.table.rows) {
-                throw new Error("No table rows found in Google Sheet response.");
+            if (!matrix || matrix.length === 0) {
+                throw new Error("Unable to retrieve sheet rows. Please verify internet access and sheet permissions.");
             }
 
-            rawRows = data.table.rows;
-            console.log(`Successfully fetched ${rawRows.length} rows.`);
+            console.log(`Successfully parsed sheet matrix: ${matrix.length} rows.`);
 
             extractHeaderMetadata();
             parseDateSheet();
             parseSyllabus();
             populateDropdown();
-        } catch (error) {
-            console.error("Error loading spreadsheet data:", error);
-            document.getElementById('tableBody').innerHTML = `
-                <tr><td colspan="2" style="color:red; text-align:center; padding: 15px;">
-                    <b>Error:</b> ${error.message}
+
+        } catch (err) {
+            console.error("Data Load Error:", err);
+            errorContainer.innerHTML = `
+                <tr><td colspan="2" style="color:red; text-align:center; padding: 20px;">
+                    <b>Data Load Error:</b> ${err.message}<br>
+                    <small>Check Console (F12) for detailed diagnostics.</small>
                 </td></tr>
             `;
             document.getElementById('classSelect').innerHTML = '<option value="">No Classes Found</option>';
         }
     }
 
-    // Safely retrieve formatted text (.f) or raw value (.v) from any cell
-    function getCellVal(r, c) {
-        if (rawRows[r] && rawRows[r].c && rawRows[r].c[c]) {
-            const cell = rawRows[r].c[c];
-            if (cell.f !== null && cell.f !== undefined && String(cell.f).trim() !== "") {
-                return String(cell.f).trim();
+    // Standard RFC-compliant CSV Parser
+    function parseCSV(text) {
+        const rows = [];
+        let currentRow = [];
+        let curVal = '';
+        let insideQuote = false;
+
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+            const nextChar = text[i + 1];
+
+            if (char === '"' && insideQuote && nextChar === '"') {
+                curVal += '"';
+                i++;
+            } else if (char === '"') {
+                insideQuote = !insideQuote;
+            } else if (char === ',' && !insideQuote) {
+                currentRow.push(curVal.trim());
+                curVal = '';
+            } else if ((char === '\r' || char === '\n') && !insideQuote) {
+                if (char === '\r' && nextChar === '\n') i++;
+                currentRow.push(curVal.trim());
+                rows.push(currentRow);
+                currentRow = [];
+                curVal = '';
+            } else {
+                curVal += char;
             }
-            if (cell.v !== null && cell.v !== undefined && String(cell.v).trim() !== "") {
-                return String(cell.v).trim();
-            }
+        }
+        if (curVal || currentRow.length > 0) {
+            currentRow.push(curVal.trim());
+            rows.push(currentRow);
+        }
+        return rows;
+    }
+
+    // Safe matrix coordinate reader
+    function getVal(r, c) {
+        if (matrix[r] && matrix[r][c] !== undefined && matrix[r][c] !== null) {
+            return String(matrix[r][c]).trim();
         }
         return "";
     }
 
-    function normalizeClassName(str) {
+    function cleanClassName(str) {
         return str.replace(/^CLASS[\s-:]*/i, '').trim();
     }
 
-    // B1: Exam Name, F1: Session
+    // B1 (0, 1): Exam Name, F1 (0, 5): Session
     function extractHeaderMetadata() {
-        const b1 = getCellVal(0, 1);
+        const b1 = getVal(0, 1);
         if (b1) examName = b1;
 
-        const f1 = getCellVal(0, 5);
+        const f1 = getVal(0, 5);
         if (f1) sessionYear = f1;
     }
 
-    // Date Sheet: Classes in B2:P2 (Row index 1, cols 1 to 15)
-    // Minor: A4:A5 (Dates), B4:P5 (Subjects)
-    // Major: A7:A12 (Dates), B7:P12 (Subjects)
+    // Date Sheet Parser
+    // Class names: B2 to P2 (Row index 1, cols 1 to 15)
+    // Minor exams: A4:A5 (Dates), B4:P5 (Subjects)
+    // Major exams: A7:A12 (Dates), B7:P12 (Subjects)
     function parseDateSheet() {
         parsedDatesheetData = {};
 
-        // Find which row has the class headers (typically row index 1)
-        let classRowIdx = 1;
-        let found = false;
+        // Find class header row around row 2 (indices 0 to 3)
+        let headerRowIdx = 1;
         for (let r = 0; r <= 3; r++) {
             for (let c = 1; c <= 15; c++) {
-                const val = getCellVal(r, c).toLowerCase();
-                if (val.includes("nur") || val.includes("1st") || val.includes("6th")) {
-                    classRowIdx = r;
-                    found = true;
+                const val = getVal(r, c).toLowerCase();
+                if (val.includes("nur") || val.includes("1st") || val.includes("6th") || val.includes("lkg")) {
+                    headerRowIdx = r;
                     break;
                 }
             }
-            if (found) break;
         }
 
-        const classCols = {};
+        const classMap = {};
         for (let c = 1; c <= 15; c++) {
-            let cls = getCellVal(classRowIdx, c);
+            let cls = getVal(headerRowIdx, c);
             if (cls) {
-                cls = normalizeClassName(cls);
-                classCols[c] = cls;
+                cls = cleanClassName(cls);
+                classMap[c] = cls;
                 if (!parsedDatesheetData[cls]) {
                     parsedDatesheetData[cls] = { minor: [], major: [] };
                 }
             }
         }
 
-        // Minor exams: Row 4 & 5 (indices 3 & 4)
+        // Minor exams: Row index 3 & 4
         for (let r = 3; r <= 4; r++) {
-            const date = getCellVal(r, 0);
+            const date = getVal(r, 0);
             if (!date) continue;
-            for (let c in classCols) {
-                const cls = classCols[c];
-                const subject = getCellVal(r, parseInt(c));
+            for (let c in classMap) {
+                const cls = classMap[c];
+                const subject = getVal(r, parseInt(c));
                 if (subject) {
                     parsedDatesheetData[cls].minor.push({ date, subject });
                 }
             }
         }
 
-        // Major exams: Row 7 to 12 (indices 6 to 11)
+        // Major exams: Row index 6 to 11
         for (let r = 6; r <= 11; r++) {
-            const date = getCellVal(r, 0);
+            const date = getVal(r, 0);
             if (!date) continue;
-            for (let c in classCols) {
-                const cls = classCols[c];
-                const subject = getCellVal(r, parseInt(c));
+            for (let c in classMap) {
+                const cls = classMap[c];
+                const subject = getVal(r, parseInt(c));
                 if (subject) {
                     parsedDatesheetData[cls].major.push({ date, subject });
                 }
@@ -450,55 +493,55 @@
         }
     }
 
-    // Syllabus:
-    // Nursery to 5th: Row 51 (header, index 50), Data: Rows 53 to 66 (indices 52 to 65), Cols A to P (0 to 15)
-    // 6th to 12th: Row 67 (header, index 66), Data: Rows 69 to 82 (indices 68 to 81), Cols A to N (0 to 13)
+    // Syllabus Parser:
+    // Block 1: Nursery - 5th -> Row 51 (idx 50), Data Rows 53-66 (idx 52-65), Cols A-P (0 to 15)
+    // Block 2: 6th - 12th -> Row 67 (idx 66), Data Rows 69-82 (idx 68-81), Cols A-N (0 to 13)
     function parseSyllabus() {
         parsedSyllabusData = {};
 
         let nurseryRowIdx = -1;
         let sixthRowIdx = -1;
 
-        // Auto-locate Row 51 and Row 67 if there are row shifts
-        for (let r = 0; r < rawRows.length; r++) {
+        // Auto-locate Nursery and 6th block headers
+        for (let r = 0; r < matrix.length; r++) {
             for (let c = 0; c < 16; c++) {
-                const val = getCellVal(r, c).toLowerCase();
-                if (nurseryRowIdx === -1 && (val.includes("nursery") || val === "nur")) {
+                const cell = getVal(r, c).toLowerCase();
+                if (nurseryRowIdx === -1 && (cell === "nursery" || cell.includes("nursery") || cell === "nur")) {
                     nurseryRowIdx = r;
                 }
-                if (sixthRowIdx === -1 && (val.includes("6th") || val === "vi" || val.includes("class 6"))) {
+                if (sixthRowIdx === -1 && (cell === "6th" || cell.includes("6th") || cell === "vi")) {
                     sixthRowIdx = r;
                 }
             }
         }
 
-        // Fallbacks to user-provided coordinates (0-indexed: Row 51 -> 50, Row 67 -> 66)
-        if (nurseryRowIdx === -1) nurseryRowIdx = 50;
-        if (sixthRowIdx === -1) sixthRowIdx = 66;
+        // Default exact row coordinate fallbacks if markers aren't string-matched
+        if (nurseryRowIdx === -1) nurseryRowIdx = 50; // Sheet row 51
+        if (sixthRowIdx === -1) sixthRowIdx = 66;    // Sheet row 67
 
-        // Parse Nursery to 5th
-        const nurseryDataEnd = sixthRowIdx > nurseryRowIdx ? (sixthRowIdx - 1) : (nurseryRowIdx + 15);
-        parseSyllabusBlock(nurseryRowIdx, nurseryRowIdx + 2, nurseryDataEnd, 16);
+        // Block 1: Nursery to 5th
+        const endB1 = sixthRowIdx > nurseryRowIdx ? (sixthRowIdx - 1) : (nurseryRowIdx + 15);
+        parseSyllabusBlock(nurseryRowIdx, nurseryRowIdx + 2, endB1, 16);
 
-        // Parse 6th to 12th
-        parseSyllabusBlock(sixthRowIdx, sixthRowIdx + 2, Math.min(sixthRowIdx + 15, rawRows.length - 1), 14);
+        // Block 2: 6th to 12th
+        parseSyllabusBlock(sixthRowIdx, sixthRowIdx + 2, Math.min(sixthRowIdx + 15, matrix.length - 1), 14);
     }
 
-    function parseSyllabusBlock(classHeaderRowIdx, startRowIdx, endRowIdx, maxCols) {
-        if (!rawRows[classHeaderRowIdx]) return;
+    function parseSyllabusBlock(headerIdx, startIdx, endIdx, maxCols) {
+        if (!matrix[headerIdx]) return;
 
         for (let c = 0; c < maxCols; c += 2) {
-            let className = getCellVal(classHeaderRowIdx, c + 1) || getCellVal(classHeaderRowIdx, c);
+            let className = getVal(headerIdx, c + 1) || getVal(headerIdx, c);
             if (!className) continue;
-            className = normalizeClassName(className);
+            className = cleanClassName(className);
 
             if (!parsedSyllabusData[className]) {
                 parsedSyllabusData[className] = [];
             }
 
-            for (let r = startRowIdx; r <= endRowIdx; r++) {
-                const subject = getCellVal(r, c);
-                const syllabus = getCellVal(r, c + 1);
+            for (let r = startIdx; r <= endIdx; r++) {
+                const subject = getVal(r, c);
+                const syllabus = getVal(r, c + 1);
                 const subLower = subject.toLowerCase();
 
                 if (
@@ -527,7 +570,7 @@
             return;
         }
 
-        classes.forEach((cls) => {
+        classes.forEach(cls => {
             const opt = document.createElement('option');
             opt.value = cls;
             opt.innerText = `Class ${cls}`;
@@ -582,7 +625,7 @@
             const isMajorMinorApplicable = /half\s*yearly|annual/i.test(examName);
 
             if (data.minor.length === 0 && data.major.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; padding: 15px;">No date sheet available for Class ${selectedClass}.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; padding: 15px;">No date sheet found for Class ${selectedClass}.</td></tr>`;
                 return;
             }
 
@@ -630,7 +673,7 @@
             const items = parsedSyllabusData[selectedClass] || [];
 
             if (items.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; padding: 15px;">No syllabus details entered for Class ${selectedClass}.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; padding: 15px;">No syllabus entered for Class ${selectedClass}.</td></tr>`;
                 return;
             }
 
@@ -670,13 +713,12 @@
             link.click();
             document.body.removeChild(link);
         }).catch(err => {
-            console.error("Image export failed:", err);
+            console.error("Image generation failed:", err);
             alert("Could not generate image. Please try again.");
         });
     }
 
     window.addEventListener('DOMContentLoaded', fetchSheetData);
 </script>
-
 </body>
 </html>
