@@ -502,11 +502,9 @@
     }
 
 // Exact-Coordinate Syllabus Parser with strict Row 69–82 limits
-// Strict Hard-Bound Syllabus Parser: Guaranteed STOP at Row 82
-    function parseSyllabus() {
+function parseSyllabus() {
         parsedSyllabusData = {};
 
-        // Configuration for Nursery to 5th (Columns A to P)
         const block1 = [
             { name: "Nursery", subCol: 0, sylCol: 1 },  // A, B
             { name: "LKG",     subCol: 2, sylCol: 3 },  // C, D
@@ -518,7 +516,6 @@
             { name: "5th",     subCol: 14, sylCol: 15 } // O, P
         ];
 
-        // Configuration for 6th to 12th (Columns A to N)
         const block2 = [
             { name: "6th",  subCol: 0, sylCol: 1 },  // A, B
             { name: "7th",  subCol: 2, sylCol: 3 },  // C, D
@@ -529,76 +526,90 @@
             { name: "12th", subCol: 12, sylCol: 13 } // M, N
         ];
 
-        // 1. Exam Name from B50 (Row 50 -> Index 49)[cite: 3]
-        let sylExam = getVal(49, 1);
-        if (!sylExam) {
-            // Fallback scan if row 50 shifted slightly
-            for (let r = 20; r <= 55; r++) {
-                const label = getVal(r, 0).toLowerCase();
-                if (label.includes("test") || label.includes("exam name")) {
-                    sylExam = getVal(r, 1);
-                    break;
-                }
+        // 1. Locate the exact row where "Test/Exam Name" is located (Row 50 in sheet)
+        let examRow = -1;
+        for (let r = 0; r < matrix.length; r++) {
+            const val = getVal(r, 0).toLowerCase();
+            if (val.includes("test") || val.includes("exam name")) {
+                examRow = r;
+                break;
             }
         }
-        examNameSyllabus = sylExam || examNameDatesheet;
+
+        // If not detected, default to row index 49 (Sheet Row 50)
+        if (examRow === -1) examRow = 49;
+
+        // Set Exam Name from Column B of this row
+        const sylExam = getVal(examRow, 1);
+        examNameSyllabus = sylExam || "Examination";
 
         // -------------------------------------------------------------
-        // BLOCK 1: Nursery to 5th
-        // Sheet Rows: 53 to 66 -> 0-based indices: 52 to 65
+        // BLOCK 1: Nursery to 5th (Sheet Rows 53 to 66)
+        // Relative to examRow: starts at +3 (Row 53), ends at +16 (Row 66)
         // -------------------------------------------------------------
+        const b1Start = examRow + 3;
+        const b1End = examRow + 16;
+
         block1.forEach(item => {
             parsedSyllabusData[item.name] = [];
-            for (let r = 52; r <= 65; r++) {
+            for (let r = b1Start; r <= b1End; r++) {
                 if (r >= matrix.length) break;
 
-                const subject = getVal(r, item.subCol);
-                const syllabus = getVal(r, item.sylCol);
+                const subject = getVal(r, item.subCol).trim();
+                const syllabus = getVal(r, item.sylCol).trim();
                 const subLower = subject.toLowerCase();
 
-                if (subLower === "class" || subLower === "subject" || subLower === "syllabus") continue;
+                // If row touches the Class 6th header (Row 67), stop
+                if (subLower === "class" || subLower === "subject") break;
 
-                if (subject.trim() !== "" || syllabus.trim() !== "") {
+                // Only add if there is actual written text
+                if (subject !== "" || syllabus !== "") {
                     parsedSyllabusData[item.name].push({
-                        subject: subject.trim(),
-                        syllabus: syllabus.trim()
+                        subject: subject,
+                        syllabus: syllabus
                     });
                 }
             }
         });
 
         // -------------------------------------------------------------
-        // BLOCK 2: 6th to 12th
-        // Sheet Rows: Exactly 69 to 82 -> 0-based indices: 68 to 81
-        // UNDER NO CIRCUMSTANCE CAN 'r' EXCEED 81 (Google Sheet Row 82)
+        // BLOCK 2: 6th to 12th (Sheet Rows 69 to 82)
+        // Relative to examRow: starts at +19 (Row 69), strictly ends at +32 (Row 82)
         // -------------------------------------------------------------
+        const b2Start = examRow + 19;
+        const b2End = examRow + 32; // Row 82 ONLY!
+
         block2.forEach(item => {
             parsedSyllabusData[item.name] = [];
-            
-            // Starts strictly at index 68 (Row 69) and terminates strictly at index 81 (Row 82)
-            for (let r = 68; r <= 81; r++) {
-                // Ironclad safety cutoff: Never touch Row 83 (index 82) or beyond!
-                if (r > 81 || r >= matrix.length) {
+            for (let r = b2Start; r <= b2End; r++) {
+                // HARD STOP: Never read Row 83 or beyond
+                if (r > b2End || r >= matrix.length) break;
+
+                const subject = getVal(r, item.subCol).trim();
+                const syllabus = getVal(r, item.sylCol).trim();
+                const subLower = subject.toLowerCase();
+
+                // Explicit stop if it hits "END" (Row 83) or "Homework" (Row 86)
+                if (
+                    subLower === "end" ||
+                    subLower === "homework" ||
+                    subLower === "class" ||
+                    subLower === "subject" ||
+                    subLower.startsWith("date")
+                ) {
                     break;
                 }
 
-                const subject = getVal(r, item.subCol);
-                const syllabus = getVal(r, item.sylCol);
-                const subLower = subject.toLowerCase();
-
-                // If any stray repeating title row is met, skip it
-                if (subLower === "class" || subLower === "subject" || subLower === "syllabus") continue;
-
-                if (subject.trim() !== "" || syllabus.trim() !== "") {
+                // Only add if there is actual written text
+                if (subject !== "" || syllabus !== "") {
                     parsedSyllabusData[item.name].push({
-                        subject: subject.trim(),
-                        syllabus: syllabus.trim()
+                        subject: subject,
+                        syllabus: syllabus
                     });
                 }
             }
         });
-    }
-    
+    }    
     function parseSyllabusGrid(headerRowIdx, startRowIdx, endRowIdx, maxCols, defaultNames) {
         let classIndex = 0;
         for (let c = 0; c < maxCols; c += 2) {
