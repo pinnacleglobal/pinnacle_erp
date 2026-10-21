@@ -502,7 +502,7 @@
     }
 
 // Exact-Coordinate Syllabus Parser with strict Row 69–82 limits
- // Precise Syllabus Parser with strict row boundaries & blank trimming
+// Bulletproof Syllabus Parser with absolute Row 82 ceiling
     function parseSyllabus() {
         parsedSyllabusData = {};
 
@@ -554,24 +554,11 @@
         }
         if (nurseryHeaderRowIdx === -1) nurseryHeaderRowIdx = testExamRowIdx + 1;
 
-        // 3. Locate exact header row for 6th (Row 67)
-        let sixthHeaderRowIdx = -1;
-        for (let r = nurseryHeaderRowIdx + 10; r < matrix.length; r++) {
-            const c0 = getVal(r, 0).toLowerCase();
-            const c1 = getVal(r, 1).toLowerCase();
-            if ((c0.includes("class") && c1.includes("6th")) || c1 === "6th" || c1 === "vi") {
-                sixthHeaderRowIdx = r;
-                break;
-            }
-        }
-        if (sixthHeaderRowIdx === -1) sixthHeaderRowIdx = nurseryHeaderRowIdx + 16;
-
         // -------------------------------------------------------------
-        // BLOCK 1: Nursery to 5th
-        // Starts 2 rows below header (Row 53), strictly ends before Row 67 (Max 14 rows: Row 66)
+        // BLOCK 1: Nursery to 5th (Rows 53 to 66 -> strictly 14 data rows)
         // -------------------------------------------------------------
-        const b1Start = nurseryHeaderRowIdx + 2;
-        const b1End = sixthHeaderRowIdx - 1; // Strictly caps at Row 66!
+        const b1Start = nurseryHeaderRowIdx + 2; // Row 53
+        const b1End = nurseryHeaderRowIdx + 15;  // Row 66
 
         block1.forEach(item => {
             parsedSyllabusData[item.name] = [];
@@ -582,10 +569,8 @@
                 const syllabus = getVal(r, item.sylCol);
                 const subLower = subject.toLowerCase();
 
-                // Stop row if another header is met
                 if (subLower === "class" || subLower === "subject" || subLower === "syllabus") continue;
 
-                // ONLY push if the cell is not empty and has something actually written
                 if (subject.trim() !== "" || syllabus.trim() !== "") {
                     parsedSyllabusData[item.name].push({
                         subject: subject.trim(),
@@ -596,14 +581,20 @@
         });
 
         // -------------------------------------------------------------
-        // BLOCK 2: 6th to 12th
-        // Starts 2 rows below header (Row 69), strictly ends after 14 rows (Row 82)
+        // BLOCK 2: 6th to 12th (Rows 69 to 82 -> strictly 14 data rows)
         // -------------------------------------------------------------
-        const b2Start = sixthHeaderRowIdx + 2;
-        const b2End = sixthHeaderRowIdx + 15; // Strictly caps at Row 82!
+        // Row 67 is directly 16 rows after Row 51 (nurseryHeaderRowIdx + 16)
+        const sixthHeaderRowIdx = nurseryHeaderRowIdx + 16; 
+        
+        // Data starts at Row 69 (sixthHeaderRowIdx + 2)
+        const b2Start = sixthHeaderRowIdx + 2; 
+        // Data MUST END at Row 82 (Row 69 + 13 = exactly 14 rows, Row 82)
+        const b2End = b2Start + 13; 
 
         block2.forEach(item => {
             parsedSyllabusData[item.name] = [];
+            
+            // Absolute hard boundary: stops at b2End (Row 82)
             for (let r = b2Start; r <= b2End; r++) {
                 if (r >= matrix.length) break;
 
@@ -611,10 +602,10 @@
                 const syllabus = getVal(r, item.sylCol);
                 const subLower = subject.toLowerCase();
 
-                // Stop row if another header is met
-                if (subLower === "class" || subLower === "subject" || subLower === "syllabus") continue;
+                // If any stray label appears below row 82, break
+                if (subLower === "class" || subLower === "subject" || subLower === "syllabus") break;
 
-                // ONLY push if the cell is not empty and has something actually written
+                // Push only if there is real content
                 if (subject.trim() !== "" || syllabus.trim() !== "") {
                     parsedSyllabusData[item.name].push({
                         subject: subject.trim(),
@@ -624,6 +615,7 @@
             }
         });
     }
+    
     function parseSyllabusGrid(headerRowIdx, startRowIdx, endRowIdx, maxCols, defaultNames) {
         let classIndex = 0;
         for (let c = 0; c < maxCols; c += 2) {
