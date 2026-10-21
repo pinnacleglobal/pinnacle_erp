@@ -501,7 +501,7 @@
         }
     }
 
-    // Dynamic Syllabus Parser based on sheet structure
+// Dynamic Syllabus Parser with strict Row 66 and Row 82 boundaries
     function parseSyllabus() {
         parsedSyllabusData = {};
 
@@ -511,7 +511,7 @@
             parsedSyllabusData[cls] = [];
         });
 
-        // 1. Locate Nursery header row (Primary block)
+        // 1. Locate Nursery header row (Primary block: Row 51 -> index 50)
         let nurseryRowIdx = -1;
         for (let r = 25; r < matrix.length; r++) {
             for (let c = 0; c < 4; c++) {
@@ -523,7 +523,7 @@
             if (nurseryRowIdx !== -1) break;
         }
 
-        // 2. Locate 6th header row (Middle/Senior block)
+        // 2. Locate 6th header row (Middle/Senior block: Row 67 -> index 66)
         let sixthRowIdx = -1;
         for (let r = 40; r < matrix.length; r++) {
             for (let c = 0; c < 4; c++) {
@@ -536,19 +536,21 @@
             if (sixthRowIdx !== -1) break;
         }
 
-        // Fallbacks if not auto-detected
-        if (nurseryRowIdx === -1) nurseryRowIdx = 50; // Row 51
-        if (sixthRowIdx === -1) sixthRowIdx = 66;    // Row 67
+        // Fallbacks if not auto-detected: Row 51 is index 50, Row 67 is index 66
+        if (nurseryRowIdx === -1) nurseryRowIdx = 50;
+        if (sixthRowIdx === -1) sixthRowIdx = 66;
 
-        // Parse Block 1: Nursery to 5th (8 classes: columns A to P, 2 columns per class)
+        // Block 1: Nursery to 5th (Rows 53 to 66 -> header is row 51, data is exactly 14 rows: idx 52 to 65)
         const block1Names = ["Nursery", "LKG", "UKG", "1st", "2nd", "3rd", "4th", "5th"];
-        const b1End = sixthRowIdx > nurseryRowIdx ? (sixthRowIdx - 1) : (nurseryRowIdx + 15);
-        
-        parseSyllabusGrid(nurseryRowIdx, nurseryRowIdx + 2, b1End, 16, block1Names);
+        const b1Start = nurseryRowIdx + 2; 
+        const b1End = nurseryRowIdx + 15; // Row 66 (index 65)
+        parseSyllabusGrid(nurseryRowIdx, b1Start, b1End, 16, block1Names);
 
-        // Parse Block 2: 6th to 12th (7 classes: columns A to N, 2 columns per class)
+        // Block 2: 6th to 12th (Rows 69 to 82 -> header is row 67, data is exactly 14 rows: idx 68 to 81)
         const block2Names = ["6th", "7th", "8th", "9th", "10th", "11th", "12th"];
-        parseSyllabusGrid(sixthRowIdx, sixthRowIdx + 2, Math.min(sixthRowIdx + 16, matrix.length - 1), 14, block2Names);
+        const b2Start = sixthRowIdx + 2;
+        const b2End = sixthRowIdx + 15; // Strictly caps at Row 82 (index 81)
+        parseSyllabusGrid(sixthRowIdx, b2Start, b2End, 14, block2Names);
     }
 
     function parseSyllabusGrid(headerRowIdx, startRowIdx, endRowIdx, maxCols, defaultNames) {
