@@ -502,8 +502,7 @@
     }
 
 // Exact-Coordinate Syllabus Parser with strict Row 69–82 limits
-    // Bulletproof Syllabus Parser
-   // Bulletproof Syllabus Parser that anchors to "Test/Exam Name"
+ // Precise Syllabus Parser with strict row boundaries & blank trimming
     function parseSyllabus() {
         parsedSyllabusData = {};
 
@@ -528,7 +527,7 @@
             { name: "12th", subCol: 12, sylCol: 13 } // M, N
         ];
 
-        // 1. Locate the "Test/Exam Name" cell to definitively jump past the Date Sheet
+        // 1. Locate the "Test/Exam Name" cell (Row 50)
         let testExamRowIdx = -1;
         for (let r = 15; r < matrix.length; r++) {
             const val = getVal(r, 0).toLowerCase();
@@ -537,61 +536,89 @@
                 break;
             }
         }
-
-        // If not found, default to Row 50 (index 49)
         if (testExamRowIdx === -1) testExamRowIdx = 49;
 
-        // Extract the syllabus exam title (cell B right next to "Test/Exam Name")
         const sylExam = getVal(testExamRowIdx, 1);
         if (sylExam) examNameSyllabus = sylExam;
 
-        // 2. Nursery to 5th Block:
-        // The Class header row (Nursery, LKG...) is 1 row below "Test/Exam Name" (Row 51)
-        const nurseryHeaderRowIdx = testExamRowIdx + 1;
-        // Data starts 2 rows below the class header (Row 53) and spans 14 rows (Row 66)
+        // 2. Locate exact header row for Nursery (Row 51)
+        let nurseryHeaderRowIdx = -1;
+        for (let r = testExamRowIdx; r < testExamRowIdx + 5; r++) {
+            if (r >= matrix.length) break;
+            const c0 = getVal(r, 0).toLowerCase();
+            const c1 = getVal(r, 1).toLowerCase();
+            if (c0.includes("class") || c1.includes("nursery")) {
+                nurseryHeaderRowIdx = r;
+                break;
+            }
+        }
+        if (nurseryHeaderRowIdx === -1) nurseryHeaderRowIdx = testExamRowIdx + 1;
+
+        // 3. Locate exact header row for 6th (Row 67)
+        let sixthHeaderRowIdx = -1;
+        for (let r = nurseryHeaderRowIdx + 10; r < matrix.length; r++) {
+            const c0 = getVal(r, 0).toLowerCase();
+            const c1 = getVal(r, 1).toLowerCase();
+            if ((c0.includes("class") && c1.includes("6th")) || c1 === "6th" || c1 === "vi") {
+                sixthHeaderRowIdx = r;
+                break;
+            }
+        }
+        if (sixthHeaderRowIdx === -1) sixthHeaderRowIdx = nurseryHeaderRowIdx + 16;
+
+        // -------------------------------------------------------------
+        // BLOCK 1: Nursery to 5th
+        // Starts 2 rows below header (Row 53), strictly ends before Row 67 (Max 14 rows: Row 66)
+        // -------------------------------------------------------------
         const b1Start = nurseryHeaderRowIdx + 2;
-        const b1End = nurseryHeaderRowIdx + 15;
+        const b1End = sixthHeaderRowIdx - 1; // Strictly caps at Row 66!
 
         block1.forEach(item => {
             parsedSyllabusData[item.name] = [];
             for (let r = b1Start; r <= b1End; r++) {
                 if (r >= matrix.length) break;
+
                 const subject = getVal(r, item.subCol);
                 const syllabus = getVal(r, item.sylCol);
                 const subLower = subject.toLowerCase();
 
+                // Stop row if another header is met
                 if (subLower === "class" || subLower === "subject" || subLower === "syllabus") continue;
 
-                if (subject !== "" || syllabus !== "") {
+                // ONLY push if the cell is not empty and has something actually written
+                if (subject.trim() !== "" || syllabus.trim() !== "") {
                     parsedSyllabusData[item.name].push({
-                        subject: subject || "---",
-                        syllabus: syllabus || "---"
+                        subject: subject.trim(),
+                        syllabus: syllabus.trim()
                     });
                 }
             }
         });
 
-        // 3. 6th to 12th Block:
-        // The Class header row for 6th to 12th is right after Row 66 (Row 67 -> b1End + 1)
-        const sixthHeaderRowIdx = b1End + 1;
-        // Data starts 2 rows below the header (Row 69) and runs for 14 rows, strictly ending at Row 82
+        // -------------------------------------------------------------
+        // BLOCK 2: 6th to 12th
+        // Starts 2 rows below header (Row 69), strictly ends after 14 rows (Row 82)
+        // -------------------------------------------------------------
         const b2Start = sixthHeaderRowIdx + 2;
-        const b2End = sixthHeaderRowIdx + 15; // Row 82 (strictly capped)
+        const b2End = sixthHeaderRowIdx + 15; // Strictly caps at Row 82!
 
         block2.forEach(item => {
             parsedSyllabusData[item.name] = [];
             for (let r = b2Start; r <= b2End; r++) {
                 if (r >= matrix.length) break;
+
                 const subject = getVal(r, item.subCol);
                 const syllabus = getVal(r, item.sylCol);
                 const subLower = subject.toLowerCase();
 
+                // Stop row if another header is met
                 if (subLower === "class" || subLower === "subject" || subLower === "syllabus") continue;
 
-                if (subject !== "" || syllabus !== "") {
+                // ONLY push if the cell is not empty and has something actually written
+                if (subject.trim() !== "" || syllabus.trim() !== "") {
                     parsedSyllabusData[item.name].push({
-                        subject: subject || "---",
-                        syllabus: syllabus || "---"
+                        subject: subject.trim(),
+                        syllabus: syllabus.trim()
                     });
                 }
             }
