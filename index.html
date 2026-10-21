@@ -501,58 +501,86 @@
         }
     }
 
-// Dynamic Syllabus Parser with strict Row 66 and Row 82 boundaries
+// Exact-Coordinate Syllabus Parser with strict Row 69–82 limits
     function parseSyllabus() {
         parsedSyllabusData = {};
 
-        // Predefined ordered class names to match standard sequence
-        const standardClasses = ["Nursery", "LKG", "UKG", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th"];
-        standardClasses.forEach(cls => {
-            parsedSyllabusData[cls] = [];
+        // 1. Block 1: Nursery to 5th
+        // Sheet Row 51 is index 50 (Header)
+        // Sheet Rows 53 to 66 are indices 52 to 65 (Data)
+        const block1Config = [
+            { name: "Nursery", subCol: 0, sylCol: 1 },  // Cols A, B
+            { name: "LKG",     subCol: 2, sylCol: 3 },  // Cols C, D
+            { name: "UKG",     subCol: 4, sylCol: 5 },  // Cols E, F
+            { name: "1st",     subCol: 6, sylCol: 7 },  // Cols G, H
+            { name: "2nd",     subCol: 8, sylCol: 9 },  // Cols I, J
+            { name: "3rd",     subCol: 10, sylCol: 11 },// Cols K, L
+            { name: "4th",     subCol: 12, sylCol: 13 },// Cols M, N
+            { name: "5th",     subCol: 14, sylCol: 15 } // Cols O, P
+        ];
+
+        block1Config.forEach(item => {
+            // Read header from Row 51 (index 50)
+            const headerVal = getVal(50, item.sylCol) || getVal(50, item.subCol);
+            const className = headerVal ? cleanClassName(headerVal) : item.name;
+            parsedSyllabusData[className] = [];
+
+            // Exactly Rows 53 to 66 (indices 52 to 65)
+            for (let r = 52; r <= 65; r++) {
+                if (r >= matrix.length) break;
+                const subject = getVal(r, item.subCol);
+                const syllabus = getVal(r, item.sylCol);
+                const subLower = subject.toLowerCase();
+
+                if (subLower === "class" || subLower === "subject" || subLower === "syllabus") continue;
+
+                if (subject !== "" || syllabus !== "") {
+                    parsedSyllabusData[className].push({
+                        subject: subject || "---",
+                        syllabus: syllabus || "---"
+                    });
+                }
+            }
         });
 
-        // 1. Locate Nursery header row (Primary block: Row 51 -> index 50)
-        let nurseryRowIdx = -1;
-        for (let r = 25; r < matrix.length; r++) {
-            for (let c = 0; c < 4; c++) {
-                if (getVal(r, c).toLowerCase().includes("nursery")) {
-                    nurseryRowIdx = r;
-                    break;
+        // 2. Block 2: 6th to 12th
+        // Sheet Row 67 is index 66 (Header)
+        // Sheet Rows 69 to 82 are indices 68 to 81 (Data)
+        const block2Config = [
+            { name: "6th",  subCol: 0, sylCol: 1 },  // Cols A, B
+            { name: "7th",  subCol: 2, sylCol: 3 },  // Cols C, D
+            { name: "8th",  subCol: 4, sylCol: 5 },  // Cols E, F
+            { name: "9th",  subCol: 6, sylCol: 7 },  // Cols G, H
+            { name: "10th", subCol: 8, sylCol: 9 },  // Cols I, J
+            { name: "11th", subCol: 10, sylCol: 11 },// Cols K, L
+            { name: "12th", subCol: 12, sylCol: 13 } // Cols M, N
+        ];
+
+        block2Config.forEach(item => {
+            // Read header from Row 67 (index 66)
+            const headerVal = getVal(66, item.sylCol) || getVal(66, item.subCol);
+            const className = headerVal ? cleanClassName(headerVal) : item.name;
+            parsedSyllabusData[className] = [];
+
+            // STRICT HARD STOP AT ROW 82 (INDEX 81)
+            for (let r = 68; r <= 81; r++) {
+                if (r >= matrix.length) break;
+
+                const subject = getVal(r, item.subCol);
+                const syllabus = getVal(r, item.sylCol);
+                const subLower = subject.toLowerCase();
+
+                if (subLower === "class" || subLower === "subject" || subLower === "syllabus") continue;
+
+                if (subject !== "" || syllabus !== "") {
+                    parsedSyllabusData[className].push({
+                        subject: subject || "---",
+                        syllabus: syllabus || "---"
+                    });
                 }
             }
-            if (nurseryRowIdx !== -1) break;
-        }
-
-        // 2. Locate 6th header row (Middle/Senior block: Row 67 -> index 66)
-        let sixthRowIdx = -1;
-        for (let r = 40; r < matrix.length; r++) {
-            for (let c = 0; c < 4; c++) {
-                const val = getVal(r, c).toLowerCase();
-                if (val.includes("6th") || val === "vi") {
-                    sixthRowIdx = r;
-                    break;
-                }
-            }
-            if (sixthRowIdx !== -1) break;
-        }
-
-        // Fallbacks if not auto-detected: Row 51 is index 50, Row 67 is index 66
-        if (nurseryRowIdx === -1) nurseryRowIdx = 50;
-        if (sixthRowIdx === -1) sixthRowIdx = 66;
-
-        // Block 1: Nursery to 5th (Rows 53 to 66 -> header is row 51, data is exactly 14 rows: idx 52 to 65)
-        const block1Names = ["Nursery", "LKG", "UKG", "1st", "2nd", "3rd", "4th", "5th"];
-        const b1Start = nurseryRowIdx + 2; 
-        const b1End = nurseryRowIdx + 15; // Row 66 (index 65)
-        parseSyllabusGrid(nurseryRowIdx, b1Start, b1End, 16, block1Names);
-
-        // Block 2: 6th to 12th (Rows 69 to 82 -> header is row 67, data is exactly 14 rows: idx 68 to 81)
-        const block2Names = ["6th", "7th", "8th", "9th", "10th", "11th", "12th"];
-        const b2Start = sixthRowIdx + 2;
-        const b2End = sixthRowIdx + 15; // Strictly caps at Row 82 (index 81)
-        parseSyllabusGrid(sixthRowIdx, b2Start, b2End, 14, block2Names);
+        });
     }
-
     function parseSyllabusGrid(headerRowIdx, startRowIdx, endRowIdx, maxCols, defaultNames) {
         let classIndex = 0;
         for (let c = 0; c < maxCols; c += 2) {
