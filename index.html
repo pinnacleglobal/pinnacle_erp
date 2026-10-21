@@ -447,6 +447,10 @@
         }
     }
 
+// Date Sheet Parser
+    // Class names: Row 2 (B2:P2)
+    // Minor: A4:A5 (Dates), B4:P5 (Subjects) -> Indices 3 & 4
+    // Major: A7:A12 (Dates), B7:P12 (Subjects) -> Indices 6 to 11
     function parseDateSheet() {
         parsedDatesheetData = {};
 
@@ -476,28 +480,137 @@
 
         // Minor exams: Rows 4 & 5 (indices 3 & 4)
         for (let r = 3; r <= 4; r++) {
-            const date = getVal(r, 0);
+            const date = getVal(r, 0).trim();
             if (!date) continue;
             for (let c in classMap) {
                 const cls = classMap[c];
-                const subject = getVal(r, parseInt(c));
-                if (subject) {
+                const subject = getVal(r, parseInt(c)).trim();
+                if (subject !== "") {
                     parsedDatesheetData[cls].minor.push({ date, subject });
                 }
             }
         }
 
-        // Major exams: Rows 7 to 12 (indices 6 to 11)
+        // Major exams / PT exams: Rows 7 to 12 (indices 6 to 11)
         for (let r = 6; r <= 11; r++) {
-            const date = getVal(r, 0);
-            if (!date) continue;
+            const date = getVal(r, 0).trim();
+            if (!date) continue; // Skip if date is empty
             for (let c in classMap) {
                 const cls = classMap[c];
-                const subject = getVal(r, parseInt(c));
-                if (subject) {
+                const subject = getVal(r, parseInt(c)).trim();
+                // Only include if date has a subject entered for that class
+                if (subject !== "") {
                     parsedDatesheetData[cls].major.push({ date, subject });
                 }
             }
+        }
+    }
+
+    function renderCard() {
+        const selectedClass = document.getElementById('classSelect').value;
+        const tbody = document.getElementById('tableBody');
+        const thCol1 = document.getElementById('thCol1');
+        const thCol2 = document.getElementById('thCol2');
+        const banner = document.getElementById('bannerLabel');
+
+        document.getElementById('selectedClassLabel').innerText = `Class : ${selectedClass || '---'}`;
+        tbody.innerHTML = '';
+
+        if (!selectedClass) {
+            tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; padding: 15px;">No class selected.</td></tr>`;
+            return;
+        }
+
+        if (currentMode === 'datesheet') {
+            thCol1.innerText = "Date";
+            thCol2.innerText = "Subject";
+            banner.innerText = `Date Sheet: ${examNameDatesheet}`;
+
+            const data = parsedDatesheetData[selectedClass] || { minor: [], major: [] };
+            const isMajorMinorApplicable = /half\s*yearly|annual/i.test(examNameDatesheet);
+
+            // 1. HALF YEARLY & ANNUAL EXAMS: Keep exactly as they are (Minor + Major with headers)
+            if (isMajorMinorApplicable) {
+                if (data.minor.length === 0 && data.major.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; padding: 15px;">No date sheet found for Class ${selectedClass}.</td></tr>`;
+                    return;
+                }
+
+                if (data.minor.length > 0) {
+                    tbody.innerHTML += `<tr class="section-header-row"><td colspan="2">MINOR EXAMS</td></tr>`;
+                    data.minor.forEach(item => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td class="col-left-td">${item.date}</td>
+                                <td class="col-right-td">${item.subject}</td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                if (data.major.length > 0) {
+                    tbody.innerHTML += `<tr class="section-header-row"><td colspan="2">MAJOR EXAMS</td></tr>`;
+                    data.major.forEach(item => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td class="col-left-td">${item.date}</td>
+                                <td class="col-right-td">${item.subject}</td>
+                            </tr>
+                        `;
+                    });
+                }
+            } 
+            // 2. PT1, PT2, PT3, PT4 & OTHER EXAMS: Only rows from A7:A12, only filled rows, no headings
+            else {
+                const ptRows = data.major; // data.major holds A7:A12
+
+                if (ptRows.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; padding: 15px;">No date sheet found for Class ${selectedClass}.</td></tr>`;
+                    return;
+                }
+
+                // Render only the filled rows from A7 to A12 with no major/minor heading
+                ptRows.forEach(item => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="col-left-td">${item.date}</td>
+                            <td class="col-right-td">${item.subject}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+        } else {
+            // Syllabus Mode
+            thCol1.innerText = "Subject";
+            thCol2.innerText = "Syllabus";
+            banner.innerText = `Syllabus: ${examNameSyllabus}`;
+
+            const items = parsedSyllabusData[selectedClass] || [];
+
+            if (items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; padding: 15px;">No syllabus entered for Class ${selectedClass}.</td></tr>`;
+                return;
+            }
+
+            items.forEach(item => {
+                let formattedSyllabus = item.syllabus;
+                if (formattedSyllabus !== "---") {
+                    formattedSyllabus = formattedSyllabus
+                        .split('\n')
+                        .map(line => line.trim())
+                        .filter(line => line.length > 0)
+                        .map(line => line.startsWith('•') || line.startsWith('-') ? line : `• ${line}`)
+                        .join('\n');
+                }
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="col-left-td">${item.subject || '---'}</td>
+                        <td class="col-right-td">${formattedSyllabus}</td>
+                    </tr>
+                `;
+            });
         }
     }
 
