@@ -1,710 +1,625 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pinnacle Global School — ERP Portal</title>
-<link rel="icon" type="image/png" href="logo.png">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --primary: #1a3a6b; --primary-light: #2456a4; --accent: #e8a020;
-    --bg: #f0f3f8; --surface: #ffffff; --surface2: #f7f9fc;
-    --border: #dce3ef; --text: #1a2540; --text2: #4a5778; --text3: #8090b0;
-    --success: #1a7a4a; --success-bg: #e6f4ed;
-    --danger: #c0392b; --radius: 10px; --radius-lg: 16px;
-    --shadow: 0 2px 12px rgba(26,58,107,0.08); --shadow-md: 0 4px 24px rgba(26,58,107,0.12);
-  }
-  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; flex-direction:column; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinnacle Global School - Syllabus & Date Sheet</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="logo.png" type="image/png">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- html2canvas Library for Image Download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-  header { background:var(--primary); color:#fff; display:flex; align-items:center; gap:16px; padding:0 32px; height:68px; box-shadow:0 2px 16px rgba(0,0,0,0.18); position:sticky; top:0; z-index:100; }
-  header img { height:46px; width:46px; object-fit:contain; border-radius:8px; background:#fff; padding:3px; }
-  .header-title { font-family:'Sora',sans-serif; font-size:18px; font-weight:700; }
-  .header-sub { font-size:11px; opacity:0.7; letter-spacing:0.04em; text-transform:uppercase; }
-  header .spacer { flex:1; }
+    <style>
+        :root {
+            --top-dark-blue: #093c85;
+            --class-blue: #007bff;
+            --gold-banner: #dca327;
+            --table-header-blue: #0c3978;
+            --row-alt-blue: #edf4ff;
+            --border-color: #d1dbe8;
+            --section-header-bg: #3f4448;
+        }
 
-  nav { background:var(--surface); border-bottom:1.5px solid var(--border); display:flex; padding:0 32px; gap:4px; }
-  .nav-btn { padding:14px 22px; font-family:'Sora',sans-serif; font-size:13px; font-weight:500; color:var(--text2); border:none; background:none; cursor:pointer; border-bottom:3px solid transparent; transition:all 0.18s; }
-  .nav-btn:hover { color:var(--primary); }
-  .nav-btn.active { color:var(--primary); border-bottom-color:var(--accent); font-weight:600; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-  main { flex:1; padding:32px; max-width:1400px; width:100%; margin:0 auto; }
-  .page { display:none; } .page.active { display:block; }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f2f4f8;
+            color: #222;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+        }
 
-  .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:28px; }
-  .stat-card { background:var(--surface); border-radius:var(--radius-lg); padding:20px 22px; box-shadow:var(--shadow); border:1px solid var(--border); position:relative; overflow:hidden; }
-  .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:var(--primary); }
-  .stat-card.accent::before { background:var(--accent); }
-  .stat-card.green::before { background:#1a7a4a; }
-  .stat-label { font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px; }
-  .stat-value { font-family:'Sora',sans-serif; font-size:32px; font-weight:700; color:var(--primary); line-height:1; }
-  .stat-card.accent .stat-value { color:#b07010; }
-  .stat-card.green .stat-value { color:var(--success); }
+        /* Controls Section */
+        .controls-container {
+            background: #ffffff;
+            padding: 12px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            width: 100%;
+            max-width: 450px;
+        }
 
-  .section-title { font-family:'Sora',sans-serif; font-size:15px; font-weight:600; color:var(--text); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
-  .section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+        .view-toggle {
+            display: flex;
+            width: 100%;
+            background: #e9ecef;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
 
-  .class-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:10px; margin-bottom:28px; }
-  .class-chip { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px 10px; text-align:center; box-shadow:var(--shadow); }
-  .class-chip .cls-name { font-size:11px; color:var(--text3); font-weight:500; text-transform:uppercase; letter-spacing:0.04em; }
-  .class-chip .cls-count { font-family:'Sora',sans-serif; font-size:22px; font-weight:700; color:var(--primary-light); }
+        .view-toggle button {
+            flex: 1;
+            padding: 8px 10px;
+            border: none;
+            background: transparent;
+            font-weight: 700;
+            font-size: 13px;
+            color: #0c3978;
+            cursor: pointer;
+            transition: 0.2s;
+        }
 
-  .table-wrap { background:var(--surface); border-radius:var(--radius-lg); box-shadow:var(--shadow); border:1px solid var(--border); overflow:auto; }
-  table { width:100%; border-collapse:collapse; font-size:13px; }
-  thead { background:var(--primary); }
-  thead th { color:#fff; padding:13px 14px; font-family:'Sora',sans-serif; font-weight:500; text-align:left; font-size:12px; letter-spacing:0.04em; white-space:nowrap; }
-  tbody tr { border-bottom:1px solid var(--border); transition:background 0.12s; }
-  tbody tr:last-child { border-bottom:none; }
-  tbody tr:hover { background:var(--surface2); }
-  tbody td { padding:12px 14px; color:var(--text); vertical-align:middle; }
-  .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
-  .badge-blue { background:#e6edf8; color:var(--primary); }
-  .badge-green { background:var(--success-bg); color:var(--success); }
-  .badge-gold { background:#fff3d6; color:#7a5500; }
-  .empty-state { text-align:center; padding:48px 20px; color:var(--text3); font-size:14px; }
+        .view-toggle button.active {
+            background: #0c3978;
+            color: #fff;
+        }
 
-  .form-card { background:var(--surface); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); border:1px solid var(--border); overflow:hidden; }
-  .form-header { background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%); padding:24px 32px; color:#fff; display:flex; align-items:center; gap:16px; }
-  .form-header img { height:48px; width:48px; object-fit:contain; background:rgba(255,255,255,0.15); border-radius:10px; padding:4px; }
-  .form-header-text h2 { font-family:'Sora',sans-serif; font-size:17px; font-weight:700; }
-  .form-header-text p { font-size:12px; opacity:0.8; margin-top:2px; }
-  .form-body { padding:32px; }
+        .controls-container label {
+            font-weight: 700;
+            color: #0c3978;
+            font-size: 14px;
+        }
 
-  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px 28px; }
-  @media(max-width:700px){ .form-grid { grid-template-columns:1fr; } }
-  .form-full { grid-column:1/-1; }
-  .form-group { display:flex; flex-direction:column; gap:6px; }
-  .form-group label { font-size:12px; font-weight:600; color:var(--text2); text-transform:uppercase; letter-spacing:0.05em; }
-  .form-group label span.req { color:#c0392b; margin-left:2px; }
-  input[type="text"],input[type="number"],input[type="date"],input[type="tel"],select,textarea {
-    border:1.5px solid var(--border); border-radius:var(--radius); padding:10px 14px;
-    font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); background:var(--surface);
-    outline:none; transition:border-color 0.15s,box-shadow 0.15s; width:100%;
-  }
-  input:focus,select:focus,textarea:focus { border-color:var(--primary-light); box-shadow:0 0 0 3px rgba(36,86,164,0.10); }
-  input::placeholder { color:var(--text3); }
+        .controls-container select {
+            padding: 6px 10px;
+            border: 1.5px solid #007bff;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            outline: none;
+            background: #fff;
+            color: #0c3978;
+        }
 
-  .autocomplete-wrap { position:relative; }
-  .autocomplete-list { position:absolute; top:calc(100% + 4px); left:0; right:0; background:var(--surface); border:1.5px solid var(--primary-light); border-radius:var(--radius); box-shadow:var(--shadow-md); z-index:200; max-height:220px; overflow-y:auto; display:none; }
-  .autocomplete-list.open { display:block; }
-  .ac-item { padding:10px 14px; font-size:13px; cursor:pointer; border-bottom:1px solid var(--border); color:var(--text); transition:background 0.1s; }
-  .ac-item:last-child { border-bottom:none; }
-  .ac-item:hover { background:var(--surface2); color:var(--primary); }
-  .ac-item mark { background:#fff3c0; color:var(--text); border-radius:2px; }
+        .btn-download {
+            background-color: #0c3978;
+            color: #ffffff;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
 
-  .form-divider { grid-column:1/-1; border:none; border-top:1.5px dashed var(--border); margin:4px 0; }
-  .form-section-label { grid-column:1/-1; font-family:'Sora',sans-serif; font-size:12px; font-weight:700; color:var(--primary); text-transform:uppercase; letter-spacing:0.08em; border-left:3px solid var(--accent); padding-left:10px; }
+        .btn-download:active {
+            opacity: 0.8;
+        }
 
-  .btn-submit { background:var(--primary); color:#fff; border:none; border-radius:var(--radius); padding:13px 36px; font-family:'Sora',sans-serif; font-size:14px; font-weight:600; cursor:pointer; transition:background 0.15s; display:flex; align-items:center; gap:8px; }
-  .btn-submit:hover { background:var(--primary-light); }
-  .btn-submit:disabled { opacity:0.6; cursor:not-allowed; }
-  .btn-reset { background:none; color:var(--text2); border:1.5px solid var(--border); border-radius:var(--radius); padding:12px 24px; font-family:'Sora',sans-serif; font-size:14px; font-weight:500; cursor:pointer; transition:border-color 0.15s; }
-  .btn-reset:hover { border-color:var(--text3); }
-  .form-actions { display:flex; gap:12px; justify-content:flex-end; margin-top:28px; }
+        /* Main Card Layout */
+        .card-wrapper {
+            width: 100%;
+            max-width: 450px;
+        }
 
-  #toast { position:fixed; bottom:32px; right:32px; background:var(--success); color:#fff; padding:14px 22px; border-radius:var(--radius); font-size:14px; font-weight:500; box-shadow:0 4px 20px rgba(0,0,0,0.18); z-index:9999; transform:translateY(80px); opacity:0; transition:all 0.3s cubic-bezier(.34,1.56,.64,1); max-width:380px; }
-  #toast.show { transform:translateY(0); opacity:1; }
-  #toast.error { background:var(--danger); }
+        .display-card {
+            background: #ffffff;
+            width: 100%;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            border-radius: 4px;
+        }
 
-  #loading { display:none; position:fixed; inset:0; background:rgba(26,58,107,0.22); z-index:9000; align-items:center; justify-content:center; flex-direction:column; gap:14px; }
-  #loading.show { display:flex; }
-  .spinner { width:44px; height:44px; border:4px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 0.8s linear infinite; }
-  @keyframes spin { to { transform:rotate(360deg); } }
-  #loading p { color:#fff; font-weight:600; font-size:15px; }
+        /* Header Blue Banner */
+        .header-bg {
+            background-color: var(--top-dark-blue);
+            padding: 20px 15px 15px 15px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-  .refresh-btn { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius); padding:8px 18px; font-size:13px; font-family:'Sora',sans-serif; font-weight:500; color:var(--primary); cursor:pointer; transition:background 0.15s; }
-  .refresh-btn:hover { background:var(--surface2); }
+        .header-bg img.logo {
+            width: 120px;
+            height: auto;
+            max-height: 120px;
+            object-fit: contain;
+            margin-bottom: 15px;
+        }
 
-  .config-notice { background:#fff8e6; border:1.5px solid #f0c040; border-radius:var(--radius); padding:14px 18px; font-size:13px; color:#7a5500; margin-bottom:20px; display:none; }
-  .config-notice.show { display:block; }
-</style>
+        /* Class Pill Box */
+        .class-pill {
+            background-color: var(--class-blue);
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 700;
+            width: 100%;
+            padding: 10px 0;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Main Body Padding */
+        .card-content {
+            padding: 12px;
+        }
+
+        /* Gold Banner */
+        .gold-banner {
+            background-color: var(--gold-banner);
+            color: #000000;
+            font-size: 16px;
+            font-weight: 700;
+            text-align: center;
+            padding: 8px 10px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+
+        /* Table Design */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+            table-layout: fixed;
+        }
+
+        .data-table th {
+            background-color: var(--table-header-blue);
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 700;
+            padding: 8px 10px;
+            text-align: center;
+            border: 1px solid var(--table-header-blue);
+        }
+
+        .data-table th.col-left {
+            width: 32%;
+        }
+
+        .data-table th.col-right {
+            width: 68%;
+        }
+
+        .data-table td {
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            vertical-align: middle;
+            line-height: 1.35;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .col-left-td {
+            font-weight: 700;
+            color: #111111;
+            text-align: center;
+        }
+
+        .col-right-td {
+            color: #222222;
+            text-align: center; /* Center aligned for datesheet subject, left for syllabus */
+        }
+
+        .syllabus-mode .col-right-td {
+            text-align: left;
+            white-space: pre-wrap;
+        }
+
+        .data-table tr:nth-child(odd) td {
+            background-color: #ffffff;
+        }
+
+        .data-table tr:nth-child(even) td {
+            background-color: var(--row-alt-blue);
+        }
+
+        /* Minor/Major Header Rows */
+        .data-table tr.section-header-row td {
+            background-color: var(--section-header-bg) !important;
+            color: #ffffff;
+            font-weight: 700;
+            text-align: center;
+            font-size: 13.5px;
+            letter-spacing: 0.5px;
+            padding: 6px 10px;
+            border: 1px solid var(--section-header-bg);
+        }
+    </style>
 </head>
 <body>
 
-<header>
-  <img src="logo.png" alt="Logo">
-  <div>
-    <div class="header-title">Pinnacle Global School</div>
-    <div class="header-sub">Student ERP Portal</div>
-  </div>
-  <div class="spacer"></div>
-  <div style="font-size:12px;color:rgba(255,255,255,0.65);text-align:right;" id="headerDate"></div>
-</header>
-
-<nav>
-  <button class="nav-btn active" id="navDash" onclick="showPage('dashboard',this)">&#9632; Dashboard</button>
-  <button class="nav-btn" id="navEntry" onclick="showPage('entry',this)">&#43; New Student Entry</button>
-</nav>
-
-<div id="loading"><div class="spinner"></div><p id="loadingMsg">Loading...</p></div>
-<div id="toast"></div>
-
-<main>
-
-  <!-- ========== DASHBOARD ========== -->
-  <div class="page active" id="page-dashboard">
-
-    <div class="config-notice" id="configNotice">
-      ⚠️ <strong>Setup required:</strong> Open <code>index.html</code> and set <code>APPS_SCRIPT_URL</code> and <code>API_KEY</code> to enable live data.
-    </div>
-
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
-      <div>
-        <div style="font-family:'Sora',sans-serif;font-size:22px;font-weight:700;color:var(--primary);">Dashboard</div>
-        <div style="font-size:13px;color:var(--text3);margin-top:3px;" id="dashYear">Registrations — Current Year</div>
-      </div>
-      <button class="refresh-btn" onclick="loadDashboard()">&#8635; Refresh Data</button>
-    </div>
-
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">Total Registrations</div>
-        <div class="stat-value" id="statTotal">—</div>
-      </div>
-      <div class="stat-card accent">
-        <div class="stat-label">Total Fees Collected</div>
-        <div class="stat-value" id="statFees">—</div>
-      </div>
-      <div class="stat-card green">
-        <div class="stat-label">Classes With Admissions</div>
-        <div class="stat-value" id="statClasses">—</div>
-      </div>
-    </div>
-
-    <div class="section-title">Class-wise Registrations</div>
-    <div class="class-grid" id="classGrid"></div>
-
-    <div class="section-title">Registrations This Year</div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Reg. Form No.</th>
-            <th>Admission No.</th>
-            <th>Date of Admission</th>
-            <th>Class</th>
-            <th>Student Name</th>
-            <th>Father's Name</th>
-            <th>Address</th>
-            <th>Reg. Fee Paid</th>
-          </tr>
-        </thead>
-        <tbody id="dashBody">
-          <tr><td colspan="8" class="empty-state">Loading...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ========== ENTRY FORM ========== -->
-  <div class="page" id="page-entry">
-    <div class="form-card">
-      <div id="entryConfigWarning" style="display:none;background:#c0392b;color:#fff;padding:14px 24px;font-size:13px;font-weight:600;">
-        ⚠️ APPS_SCRIPT_URL is not set in index.html — submissions will NOT reach Google Sheets. Please follow the setup instructions.
-      </div>
-      <div class="form-header">
-        <img src="logo.png" alt="Logo">
-        <div class="form-header-text">
-          <h2>Student Registration Form</h2>
-          <p>Pinnacle Global School — New Admission Entry</p>
+    <!-- User Controls -->
+    <div class="controls-container">
+        <div class="view-toggle">
+            <button id="btnTabDatesheet" class="active" onclick="switchMode('datesheet')">Date Sheet</button>
+            <button id="btnTabSyllabus" onclick="switchMode('syllabus')">Syllabus</button>
         </div>
-      </div>
-      <div class="form-body">
-        <form id="studentForm" autocomplete="off">
-          <div class="form-grid">
 
-            <div class="form-section-label">Registration Details</div>
+        <div>
+            <label for="classSelect">Class: </label>
+            <select id="classSelect" onchange="renderCard()">
+                <option value="">-- Loading... --</option>
+            </select>
+        </div>
 
-            <div class="form-group">
-              <label>Registration Form Number <span class="req">*</span></label>
-              <input type="text" id="regFormNo" placeholder="e.g. PGS-2025-001" required>
-            </div>
-            <div class="form-group">
-              <label>Date of Admission <span class="req">*</span></label>
-              <input type="date" id="admDate" required>
-            </div>
-            <div class="form-group">
-              <label>Class of Admission <span class="req">*</span></label>
-              <select id="classAdm" required>
-                <option value="">— Select Class —</option>
-                <option>Nursery</option><option>LKG</option><option>UKG</option>
-                <option>1st</option><option>2nd</option><option>3rd</option><option>4th</option><option>5th</option>
-                <option>6th</option><option>7th</option><option>8th</option><option>9th</option><option>10th</option>
-                <option>11th</option><option>12th</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Registration Fee Amount Paid (₹)</label>
-              <input type="number" id="regFee" placeholder="e.g. 500" min="0">
-            </div>
-
-            <hr class="form-divider">
-            <div class="form-section-label">Student Information</div>
-
-            <div class="form-group">
-              <label>Student Name <span class="req">*</span></label>
-              <input type="text" id="studentName" placeholder="Full name of student" required>
-            </div>
-            <div class="form-group">
-              <label>Date of Birth <span class="req">*</span></label>
-              <input type="date" id="dob" required>
-            </div>
-            <div class="form-group">
-              <label>Gender <span class="req">*</span></label>
-              <select id="gender" required>
-                <option value="">— Select Gender —</option>
-                <option>Male</option><option>Female</option><option>Other</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Caste <span class="req">*</span></label>
-              <select id="caste" required>
-                <option value="">— Select Caste —</option>
-                <option>General</option><option>OBC</option><option>SC</option><option>ST</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Student Aadhaar Number</label>
-              <input type="text" id="aadhaar" placeholder="12-digit Aadhaar number" maxlength="14">
-            </div>
-            <div class="form-group">
-              <label>Phone Number <span class="req">*</span></label>
-              <input type="tel" id="phone" placeholder="10-digit mobile number" maxlength="10" required>
-            </div>
-
-            <hr class="form-divider">
-            <div class="form-section-label">Parent / Guardian Details</div>
-
-            <div class="form-group">
-              <label>Mother's Name</label>
-              <input type="text" id="motherName" placeholder="Full name of mother">
-            </div>
-            <div class="form-group">
-              <label>Father's Name <span class="req">*</span></label>
-              <input type="text" id="fatherName" placeholder="Full name of father" required>
-            </div>
-
-            <hr class="form-divider">
-            <div class="form-section-label">School & Address</div>
-
-            <div class="form-group">
-              <label>Previous School</label>
-              <input type="text" id="prevSchool" placeholder="Name of previous school (if any)">
-            </div>
-            <div class="form-group form-full">
-              <label>Address <span class="req">*</span></label>
-              <div class="autocomplete-wrap">
-                <input type="text" id="addressInput" placeholder="Type 2+ letters to search address..." autocomplete="off" required>
-                <input type="hidden" id="addressValue">
-                <div class="autocomplete-list" id="addressList"></div>
-              </div>
-            </div>
-
-          </div>
-          <div class="form-actions">
-            <button type="button" class="btn-reset" onclick="resetForm()">&#8635; Reset Form</button>
-            <button type="submit" class="btn-submit" id="submitBtn">&#10003; Submit Registration</button>
-          </div>
-        </form>
-      </div>
+        <button class="btn-download" onclick="downloadImage()">
+            Download Image
+        </button>
     </div>
-  </div>
 
-</main>
+    <!-- Printable / Download Area -->
+    <div class="card-wrapper">
+        <div class="display-card" id="cardContainer">
+            
+            <!-- Dark Blue Top Bar with Logo & Class -->
+            <div class="header-bg">
+                <img src="logo.png" alt="Pinnacle Global School Logo" class="logo" onerror="this.src='https://via.placeholder.com/120?text=PGS+LOGO'">
+                <div class="class-pill" id="selectedClassLabel">Class : ---</div>
+            </div>
 
-<script>
-// =====================================================================
-// CONFIGURATION — REPLACE THESE TWO VALUES BEFORE DEPLOYING
-// =====================================================================
-// 1. Deploy Code.gs as a Web App in Google Apps Script and paste the URL here:
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzukUqk10urIHQ-o7aEZEa0AhFiKqHrB4zQzj2xX8DQZmcxztoJxi8XRYU72CFzeIxYLg/exec';
+            <!-- Content Area -->
+            <div class="card-content" id="cardContent">
+                <!-- Gold Banner -->
+                <div class="gold-banner" id="bannerLabel">Loading...</div>
 
-// 2. Paste your Google Sheets API Key here (sheet must be publicly viewable):
-const API_KEY = 'AIzaSyB5VIy4kIySW7bVrjNYMpL5rkqZ7Oe758E';
-// =====================================================================
+                <!-- Main Table -->
+                <table class="data-table" id="dataTable">
+                    <thead>
+                        <tr>
+                            <th class="col-left" id="thCol1">Date</th>
+                            <th class="col-right" id="thCol2">Subject</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr>
+                            <td colspan="2" style="text-align: center; padding: 20px; color: #666;">
+                                Loading data...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-const SHEET_ID   = '1OGjVUEvD-vWJ73vANmjbNFezvXplhkTS5sSx3jDE5cI';
-const SHEET_NAME = 'AW register';
-const CLASSES    = ['Nursery','LKG','UKG','1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th'];
+        </div>
+    </div>
 
-const ADDRESS_OPTIONS = [
-  "Village : Aadha, Post : Sikandrabad, District : Bulandshahr",
-  "Village : Banchawali, Post : Banchawali, District : Bulandshahr",
-  "Village : Birondi Tajpur, Post : Birondi Tajpur, District : Bulandshahr",
-  "Village : Bodha, Post : Prangarh, District : Bulandshahr",
-  "Village : Bohrawas, Post : Roopwas Pachgai, District : Bulandshahr",
-  "Bulandshahr City, District Bulandshahr",
-  "Village : Chachoi, Post : Roopwas Pachgai, District : Bulandshahr",
-  "Village : Chola, Post : Chola, District : Bulandshahr",
-  "Village : Dhamera, Post : Roopwas Pachgai, District : Bulandshahr",
-  "Village : Dhanora, Post : Dhanora, District : Bulandshahr",
-  "Village : Fatehpur, Post : Chola, District : Bulandshahr",
-  "Village : Gangraul, Post : Chola, District : Bulandshahr",
-  "Village : Hartauli, Post : Naithla, District : Bulandshahr",
-  "Village : Kanakpur, Post : Baroda, District : Bulandshahr",
-  "Village : Khawaspur, Post : Chola, District : Bulandshahr",
-  "Village : Kondu, Post : Banchawali, District : Bulandshahr",
-  "Village : Luhakar, Post : Rasulpur, District : Bulandshahr",
-  "Village : Machkauli, Post : Jhal Khera, District : Bulandshahr",
-  "Village : Nagla Allahabad, Post : Chola, District : Bulandshahr",
-  "Village : Nagla Baroda, Post : Baroda, District : Bulandshahr",
-  "Village : Naithla, Post : Naithla, District : Bulandshahr",
-  "Village : Nawada, Post : Birondi Tajpur, District : Bulandshahr",
-  "Village : Nithari, Post : Wair, District : Bulandshahr",
-  "Village : Pachauta, Post : Sikhera, District : Bulandshahr",
-  "Village : Roopwas Pachgai, Post : Roopwas Pachgai, District : Bulandshahr",
-  "Village : Rasulpur, Post : Rasulpur, District : Bulandshahr",
-  "Village : Sabdalpur, Post : Kahira, District : Bulandshahr",
-  "Village : Shahpur, Post : Rasulpur, District : Bulandshahr",
-  "Village : Sikhera, Post : Sikhera, District : Bulandshahr",
-  "Village : Sultanpur, Post : Chola, District : Bulandshahr",
-  "Village : Sutari, Post : Dariyapur, District : Bulandshahr",
-  "Village : Sherpur, Post : Kahira, District : Bulandshahr",
-  "Village : Kaithra, Post : Kahira, District : Bulandshahr",
-  "Village : Dheemri, Post : Naithla, District : Bulandshahr",
-  "Village : Shahwazpur, Post : Prangarh, District : Bulandshahr",
-  "Sikandrabad, District : Bulandshahr",
-  "Khurja, District : Bulandshahr",
-  "Village : Fauladpur, Post : Birondi Tajpur, District : Bulandshahr",
-  "Chola Police Station, District : Bulandshahr",
-  "Village : Bhuchanagar, Post : Naithla, District : Bulandshahr",
-  "Village : Dostpur, Post : Dariyapur, District : Bulandshahr",
-  "Village : Sunehra, Post : Naithla, District : Bulandshahr",
-  "Village : Nagla Tota, Post : Nagla Tota, District : Bulandshahr",
-  "Village : Nagalia, Post : Gangera, District : Bulandshahr",
-  "Village : Gangera, Post : Gangera, District : Bulandshahr"
-];
+    <script>
+        // Target Sheet Details
+        const SHEET_ID = '1Sy5uBZkjKpGnLdZp2sFuhFORhO1fRqCswfNYHRl73PM';
+        const GID = '1383668039';
+        const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}`;
 
-// ---- Date header ----
-(function(){
-  const now = new Date();
-  document.getElementById('headerDate').textContent =
-    now.toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  document.getElementById('dashYear').textContent =
-    'Registrations — January to December ' + now.getFullYear();
-})();
+        let currentMode = 'datesheet'; // 'datesheet' or 'syllabus'
+        let rawRows = [];
+        let examName = "Examination";
+        let sessionYear = "";
 
-// ---- Navigation ----
-function showPage(name, btn) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  if (btn) btn.classList.add('active');
-  if (name === 'dashboard') loadDashboard();
-}
+        // Parsed Data Stores
+        let parsedSyllabusData = {};
+        let parsedDatesheetData = {}; // structure: { className: { minor: [{date, subject}], major: [{date, subject}] } }
 
-// ---- Loading / Toast ----
-function setLoading(on, msg) {
-  document.getElementById('loading').classList[on?'add':'remove']('show');
-  if (msg) document.getElementById('loadingMsg').textContent = msg;
-}
-function showToast(msg, type) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'show' + (type==='error' ? ' error' : '');
-  setTimeout(() => t.className = '', 4000);
-}
+        // Fetch Google Sheet Data
+        async function fetchSheetData() {
+            try {
+                const response = await fetch(SHEET_URL);
+                const text = await response.text();
+                const jsonString = text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1);
+                const data = JSON.parse(jsonString);
 
-// ---- Address autocomplete ----
-const addressInput = document.getElementById('addressInput');
-const addressList  = document.getElementById('addressList');
-const addressValue = document.getElementById('addressValue');
+                rawRows = data.table.rows;
+                
+                extractHeaderMetadata();
+                parseDateSheet();
+                parseSyllabus();
+                populateDropdown();
+            } catch (error) {
+                console.error("Error loading spreadsheet data:", error);
+                document.getElementById('tableBody').innerHTML = `
+                    <tr><td colspan="2" style="color:red; text-align:center;">Failed to fetch sheet data. Verify network and access permissions.</td></tr>
+                `;
+            }
+        }
 
-addressInput.addEventListener('input', function() {
-  const q = this.value.trim().toLowerCase();
-  addressValue.value = '';
-  if (q.length < 2) { addressList.classList.remove('open'); return; }
-  const matches = ADDRESS_OPTIONS.filter(a => a.toLowerCase().includes(q));
-  if (!matches.length) {
-    addressList.innerHTML = '<div class="ac-item" style="color:var(--text3)">No matches found</div>';
-    addressList.classList.add('open');
-    return;
-  }
-  const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
-  addressList.innerHTML = matches.map(a =>
-    `<div class="ac-item" onclick="selectAddress(this)" data-val="${a.replace(/"/g,'&quot;')}">${a.replace(re,'<mark>$1</mark>')}</div>`
-  ).join('');
-  addressList.classList.add('open');
-});
-function selectAddress(el) {
-  addressInput.value = el.dataset.val;
-  addressValue.value = el.dataset.val;
-  addressList.classList.remove('open');
-}
-document.addEventListener('click', function(e) {
-  if (!addressInput.contains(e.target) && !addressList.contains(e.target))
-    addressList.classList.remove('open');
-});
+        // Helper to safely get cell formatted or raw text (0-indexed)
+        function getCellVal(r, c) {
+            if (rawRows[r] && rawRows[r].c && rawRows[r].c[c]) {
+                const cell = rawRows[r].c[c];
+                if (cell.f !== null && cell.f !== undefined) return String(cell.f).trim();
+                if (cell.v !== null && cell.v !== undefined) return String(cell.v).trim();
+            }
+            return "";
+        }
 
-// ---- Date formatter: YYYY-MM-DD → DD/MM/YYYY ----
-function toSheetDate(iso) {
-  if (!iso) return '';
-  const [y,m,d] = iso.split('-');
-  return d+'/'+m+'/'+y;
-}
+        // Extract B1: Exam Name, F1: Session
+        function extractHeaderMetadata() {
+            const b1 = getCellVal(0, 1); // Row 1, Col B
+            if (b1) examName = b1;
 
-// ---- Reset form ----
-function resetForm() {
-  document.getElementById('studentForm').reset();
-  addressInput.value = '';
-  addressValue.value = '';
-}
+            const f1 = getCellVal(0, 5); // Row 1, Col F
+            if (f1) sessionYear = f1;
+        }
 
-// =====================================================================
-// SUBMIT — uses a hidden iframe to POST form data to Apps Script.
-//
-// This is the ONLY method that works reliably from a static GitHub
-// Pages site to Google Apps Script:
-//   • fetch() no-cors hangs on Apps Script redirects
-//   • img ping gets blocked (not an image response)
-//   • iframe form POST: browser handles the redirect natively,
-//     Apps Script receives e.parameter fields correctly, data is
-//     written, and we resolve after a safe 6-second window.
-// =====================================================================
-function submitToSheet(data) {
-  return new Promise(function(resolve, reject) {
-    if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_WEB_APP_URL') {
-      reject(new Error('APPS_SCRIPT_URL is not configured. Please read the setup instructions.'));
-      return;
-    }
+        // Clean class names consistently
+        function normalizeClassName(str) {
+            return str.replace(/^CLASS[\s-:]*/i, '').trim();
+        }
 
-    // Create a hidden iframe as the form target
-    const iframeName = 'submit_iframe_' + Date.now();
-    const iframe = document.createElement('iframe');
-    iframe.name = iframeName;
-    iframe.style.cssText = 'display:none;position:absolute;';
-    document.body.appendChild(iframe);
+        // Parse Date Sheet: Rows 1 to 12 (indices 0 to 11)
+        function parseDateSheet() {
+            parsedDatesheetData = {};
 
-    // Create a hidden form that POSTs to Apps Script
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = APPS_SCRIPT_URL;
-    form.target = iframeName;
-    form.style.cssText = 'display:none;';
+            // Classes are in B2 to P2 (Row index 1, Cols 1 to 15)
+            const classCols = {};
+            for (let c = 1; c <= 15; c++) {
+                let clsName = getCellVal(1, c);
+                if (clsName) {
+                    clsName = normalizeClassName(clsName);
+                    classCols[c] = clsName;
+                    if (!parsedDatesheetData[clsName]) {
+                        parsedDatesheetData[clsName] = { minor: [], major: [] };
+                    }
+                }
+            }
 
-    // Add all data fields as hidden inputs
-    const allData = Object.assign({ action: 'submit' }, data);
-    Object.keys(allData).forEach(function(key) {
-      const input = document.createElement('input');
-      input.type  = 'hidden';
-      input.name  = key;
-      input.value = allData[key] || '';
-      form.appendChild(input);
-    });
+            // Minor Exams: Dates in A4:A5 (Indices 3:4), Subjects in B4:P5 (Indices 3:4)
+            for (let r = 3; r <= 4; r++) {
+                const date = getCellVal(r, 0);
+                if (!date) continue;
+                for (let c in classCols) {
+                    const cls = classCols[c];
+                    const subject = getCellVal(r, parseInt(c));
+                    if (subject) {
+                        parsedDatesheetData[cls].minor.push({ date, subject });
+                    }
+                }
+            }
 
-    document.body.appendChild(form);
+            // Major Exams: Dates in A7:A12 (Indices 6:11), Subjects in B7:P12 (Indices 6:11)
+            for (let r = 6; r <= 11; r++) {
+                const date = getCellVal(r, 0);
+                if (!date) continue;
+                for (let c in classCols) {
+                    const cls = classCols[c];
+                    const subject = getCellVal(r, parseInt(c));
+                    if (subject) {
+                        parsedDatesheetData[cls].major.push({ date, subject });
+                    }
+                }
+            }
+        }
 
-    // Resolve after 6 seconds — Apps Script writes data before responding
-    const timer = setTimeout(function() {
-      cleanup();
-      resolve(true);
-    }, 6000);
+        // Parse Syllabus: A50:P82 (Indices 49 to 81)
+        function parseSyllabus() {
+            parsedSyllabusData = {};
 
-    iframe.onload = function() {
-      // iframe loaded = Apps Script responded = data is written
-      clearTimeout(timer);
-      setTimeout(function() { cleanup(); resolve(true); }, 500);
-    };
+            // Block 1: Nursery to 5th (Row 51 header -> Index 50, Subject/Syllabus header -> Index 51, Data -> Rows 53-66 / Indices 52-65, Cols 0-15)
+            parseSyllabusBlock(50, 52, 65, 16);
 
-    function cleanup() {
-      try { document.body.removeChild(iframe); } catch(e){}
-      try { document.body.removeChild(form);   } catch(e){}
-    }
+            // Block 2: 6th to 12th (Row 67 header -> Index 66, Subject/Syllabus header -> Index 67, Data -> Rows 69-82 / Indices 68-81, Cols 0-13)
+            parseSyllabusBlock(66, 68, 81, 14);
+        }
 
-    form.submit();
-  });
-}
+        function parseSyllabusBlock(classHeaderRowIdx, startRowIdx, endRowIdx, maxColIndex) {
+            if (!rawRows[classHeaderRowIdx]) return;
 
-// ---- Form submit handler ----
-document.getElementById('studentForm').addEventListener('submit', async function(e) {
-  e.preventDefault();
+            for (let c = 0; c < maxColIndex; c += 2) {
+                let className = getCellVal(classHeaderRowIdx, c + 1) || getCellVal(classHeaderRowIdx, c);
+                if (!className) continue;
+                className = normalizeClassName(className);
 
-  const addr = addressValue.value || addressInput.value.trim();
-  if (!addr) {
-    showToast('Please select an address from the dropdown.', 'error');
-    return;
-  }
+                if (!parsedSyllabusData[className]) {
+                    parsedSyllabusData[className] = [];
+                }
 
-  const data = {
-    regFormNo:   document.getElementById('regFormNo').value.trim(),
-    admDate:     toSheetDate(document.getElementById('admDate').value),
-    classAdm:    document.getElementById('classAdm').value,
-    regFee:      document.getElementById('regFee').value || '0',
-    studentName: document.getElementById('studentName').value.trim(),
-    dob:         toSheetDate(document.getElementById('dob').value),
-    gender:      document.getElementById('gender').value,
-    caste:       document.getElementById('caste').value,
-    aadhaar:     document.getElementById('aadhaar').value.trim(),
-    phone:       document.getElementById('phone').value.trim(),
-    motherName:  document.getElementById('motherName').value.trim(),
-    fatherName:  document.getElementById('fatherName').value.trim(),
-    prevSchool:  document.getElementById('prevSchool').value.trim(),
-    address:     addr
-  };
+                for (let r = startRowIdx; r <= endRowIdx; r++) {
+                    const subject = getCellVal(r, c);
+                    const syllabus = getCellVal(r, c + 1);
+                    const subLower = subject.toLowerCase();
 
-  setLoading(true, 'Sending data to Google Sheet...');
-  document.getElementById('submitBtn').disabled = true;
+                    // Discard blank and structural repeated headers
+                    if (
+                        (subject !== "" || syllabus !== "") &&
+                        !subLower.startsWith("class") &&
+                        !subLower.startsWith("subject") &&
+                        !subLower.startsWith("syllabus")
+                    ) {
+                        parsedSyllabusData[className].push({
+                            subject: subject,
+                            syllabus: syllabus
+                        });
+                    }
+                }
+            }
+        }
 
-  // Countdown so user knows it's working (not frozen)
-  let secs = 6;
-  const countdown = setInterval(() => {
-    secs--;
-    if (secs > 0) setLoading(true, 'Writing to sheet... please wait (' + secs + 's)');
-  }, 1000);
+        // Populate Dropdown
+        function populateDropdown() {
+            const select = document.getElementById('classSelect');
+            const previousVal = select.value;
+            select.innerHTML = '';
 
-  try {
-    await submitToSheet(data);
-    clearInterval(countdown);
-    showToast('✓ Registration submitted! Verify entry in the Google Sheet.');
-    resetForm();
-    setTimeout(() => {
-      showPage('dashboard', document.getElementById('navDash'));
-    }, 1400);
-  } catch(err) {
-    clearInterval(countdown);
-    showToast('Error: ' + err.message, 'error');
-    console.error(err);
-  } finally {
-    setLoading(false);
-    document.getElementById('submitBtn').disabled = false;
-  }
-});
+            const dataSource = currentMode === 'datesheet' ? parsedDatesheetData : parsedSyllabusData;
+            const classes = Object.keys(dataSource);
 
-// =====================================================================
-// DASHBOARD — reads from Google Sheets API
-//
-// Column index map (0-based in API response array):
-//   A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7,
-//   K=10, L=11, N=13, W=22, Y=24, Z=25,
-//   BA=52, BB=53
-//
-// Rows 0,1,2 in the API values array = sheet rows 1,2,3 = HEADERS
-// Data starts at values array index 3 (= sheet row 4)
-// =====================================================================
-async function loadDashboard() {
-  setLoading(true, 'Loading dashboard...');
+            if (classes.length === 0) {
+                select.innerHTML = '<option value="">No Classes Found</option>';
+                return;
+            }
 
-  if (!API_KEY || API_KEY === 'YOUR_GOOGLE_SHEETS_API_KEY') {
-    document.getElementById('configNotice').classList.add('show');
-    showPlaceholderDashboard();
-    setLoading(false);
-    return;
-  }
+            classes.forEach((cls) => {
+                const opt = document.createElement('option');
+                opt.value = cls;
+                opt.innerText = `Class ${cls}`;
+                select.appendChild(opt);
+            });
 
-  document.getElementById('configNotice').classList.remove('show');
+            if (previousVal && classes.includes(previousVal)) {
+                select.value = previousVal;
+            } else {
+                select.selectedIndex = 0;
+            }
 
-  try {
-    // Fetch columns A through BB (BA=53rd col, BB=54th col)
-    const range = encodeURIComponent(SHEET_NAME + '!A:BB');
-    const url   = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?key=${API_KEY}`;
-    const resp  = await fetch(url);
-    const json  = await resp.json();
+            renderCard();
+        }
 
-    if (json.error) {
-      showToast('API Error: ' + json.error.message, 'error');
-      showPlaceholderDashboard();
-      setLoading(false);
-      return;
-    }
+        // Switch Mode between Date Sheet & Syllabus
+        function switchMode(mode) {
+            currentMode = mode;
+            document.getElementById('btnTabDatesheet').className = mode === 'datesheet' ? 'active' : '';
+            document.getElementById('btnTabSyllabus').className = mode === 'syllabus' ? 'active' : '';
 
-    const allRows    = json.values || [];
-    const currentYear = new Date().getFullYear();
-    const entries    = [];
+            const content = document.getElementById('cardContent');
+            if (mode === 'syllabus') {
+                content.classList.add('syllabus-mode');
+            } else {
+                content.classList.remove('syllabus-mode');
+            }
 
-    // Skip the first 3 rows (header rows), start from index 3
-    for (let i = 3; i < allRows.length; i++) {
-      const row     = allRows[i];
-      const dateAdm = (row[2] || '').toString().trim(); // Column C
-      if (!dateAdm) continue;
+            populateDropdown();
+        }
 
-      // Parse DD/MM/YYYY — skip if not this year
-      const parts = dateAdm.split('/');
-      if (parts.length !== 3) continue;
-      const yr = parseInt(parts[2], 10);
-      if (yr !== currentYear) continue;
+        // Render Card Data
+        function renderCard() {
+            const selectedClass = document.getElementById('classSelect').value;
+            const tbody = document.getElementById('tableBody');
+            const thCol1 = document.getElementById('thCol1');
+            const thCol2 = document.getElementById('thCol2');
+            const banner = document.getElementById('bannerLabel');
 
-      entries.push({
-        regFormNo:   (row[52] || '').toString().trim(), // BA
-        admNo:       (row[1]  || '').toString().trim(), // B
-        dateAdm:     dateAdm,                           // C
-        studentName: (row[3]  || '').toString().trim(), // D
-        classAdm:    (row[4]  || '').toString().trim(), // E
-        fatherName:  (row[6]  || '').toString().trim(), // G
-        address:     (row[7]  || '').toString().trim(), // H
-        regFee:      (row[53] || '0').toString().trim() // BB
-      });
-    }
+            document.getElementById('selectedClassLabel').innerText = `Class : ${selectedClass}`;
+            tbody.innerHTML = '';
 
-    renderDashboard(entries);
-  } catch(err) {
-    showToast('Failed to load dashboard: ' + err.message, 'error');
-    console.error(err);
-    showPlaceholderDashboard();
-  }
+            if (currentMode === 'datesheet') {
+                thCol1.innerText = "Date";
+                thCol2.innerText = "Subject";
+                banner.innerText = `Date Sheet: ${examName}`;
 
-  setLoading(false);
-}
+                const data = parsedDatesheetData[selectedClass] || { minor: [], major: [] };
+                const isMajorMinorApplicable = /half\s*yearly|annual/i.test(examName);
 
-function renderDashboard(entries) {
-  // --- Top stats ---
-  document.getElementById('statTotal').textContent = entries.length;
-  const totalFees = entries.reduce((s,e) => s + (parseFloat(e.regFee)||0), 0);
-  document.getElementById('statFees').textContent = '₹' + totalFees.toLocaleString('en-IN');
-  const classCounts = {};
-  CLASSES.forEach(c => classCounts[c] = 0);
-  entries.forEach(e => { if (classCounts[e.classAdm] !== undefined) classCounts[e.classAdm]++; });
-  document.getElementById('statClasses').textContent = Object.values(classCounts).filter(v=>v>0).length;
+                if (data.minor.length === 0 && data.major.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; padding: 15px;">No date sheet available.</td></tr>`;
+                    return;
+                }
 
-  // --- Class chips ---
-  document.getElementById('classGrid').innerHTML = CLASSES.map(c =>
-    `<div class="class-chip">
-      <div class="cls-count">${classCounts[c]}</div>
-      <div class="cls-name">${c}</div>
-    </div>`
-  ).join('');
+                // If Half Yearly or Annual, render with Minor/Major section subheaders
+                if (isMajorMinorApplicable) {
+                    if (data.minor.length > 0) {
+                        tbody.innerHTML += `<tr class="section-header-row"><td colspan="2">MINOR EXAMS</td></tr>`;
+                        data.minor.forEach(item => {
+                            tbody.innerHTML += `
+                                <tr>
+                                    <td class="col-left-td">${item.date}</td>
+                                    <td class="col-right-td">${item.subject}</td>
+                                </tr>
+                            `;
+                        });
+                    }
 
-  // --- Table ---
-  const tbody = document.getElementById('dashBody');
-  if (!entries.length) {
-    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No registrations found for the current year.</td></tr>';
-    return;
-  }
-  tbody.innerHTML = entries.map(e => `
-    <tr>
-      <td><span class="badge badge-blue">${e.regFormNo || '—'}</span></td>
-      <td><span class="badge badge-gold">${e.admNo || '—'}</span></td>
-      <td>${e.dateAdm}</td>
-      <td><span class="badge badge-green">${e.classAdm}</span></td>
-      <td style="font-weight:500">${e.studentName}</td>
-      <td>${e.fatherName}</td>
-      <td style="font-size:12px;color:var(--text2);max-width:180px">${e.address}</td>
-      <td style="font-weight:600;color:var(--success)">₹${parseFloat(e.regFee||0).toLocaleString('en-IN')}</td>
-    </tr>`
-  ).join('');
-}
+                    if (data.major.length > 0) {
+                        tbody.innerHTML += `<tr class="section-header-row"><td colspan="2">MAJOR EXAMS</td></tr>`;
+                        data.major.forEach(item => {
+                            tbody.innerHTML += `
+                                <tr>
+                                    <td class="col-left-td">${item.date}</td>
+                                    <td class="col-right-td">${item.subject}</td>
+                                </tr>
+                            `;
+                        });
+                    }
+                } else {
+                    // For PT1, PT2, PT3, PT4 - simple combined table without subheaders
+                    const combined = [...data.minor, ...data.major];
+                    combined.forEach(item => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td class="col-left-td">${item.date}</td>
+                                <td class="col-right-td">${item.subject}</td>
+                            </tr>
+                        `;
+                    });
+                }
 
-function showPlaceholderDashboard() {
-  document.getElementById('statTotal').textContent = '—';
-  document.getElementById('statFees').textContent  = '—';
-  document.getElementById('statClasses').textContent = '—';
-  document.getElementById('classGrid').innerHTML = CLASSES.map(c =>
-    `<div class="class-chip"><div class="cls-count">—</div><div class="cls-name">${c}</div></div>`
-  ).join('');
-  document.getElementById('dashBody').innerHTML =
-    '<tr><td colspan="8" class="empty-state">Configure API Key to see live data.</td></tr>';
-}
+            } else {
+                // Syllabus Mode
+                thCol1.innerText = "Subject";
+                thCol2.innerText = "Syllabus";
+                banner.innerText = `Syllabus: ${examName}`;
 
-// Load dashboard on start
-loadDashboard();
+                const items = parsedSyllabusData[selectedClass] || [];
 
-// Show config warning on entry page if URL not set
-(function() {
-  const warn = document.getElementById('entryConfigWarning');
-  if (warn && (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_WEB_APP_URL')) {
-    warn.style.display = 'block';
-  }
-})();
-</script>
+                if (items.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; padding: 15px;">No syllabus details entered.</td></tr>`;
+                    return;
+                }
+
+                items.forEach(item => {
+                    let formattedSyllabus = item.syllabus
+                        .split('\n')
+                        .map(line => line.trim())
+                        .filter(line => line.length > 0)
+                        .map(line => line.startsWith('•') || line.startsWith('-') ? line : `• ${line}`)
+                        .join('\n');
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="col-left-td">${item.subject || '---'}</td>
+                            <td class="col-right-td">${formattedSyllabus}</td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        // Download PNG Image
+        function downloadImage() {
+            const container = document.getElementById('cardContainer');
+            const selectedClass = document.getElementById('classSelect').value;
+            const prefix = currentMode === 'datesheet' ? 'DateSheet' : 'Syllabus';
+
+            html2canvas(container, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: "#ffffff"
+            }).then(canvas => {
+                const imageURI = canvas.toDataURL("image/png");
+                const link = document.createElement("a");
+                link.download = `${prefix}_Class_${selectedClass}.png`;
+                link.href = imageURI;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }).catch(err => {
+                console.error("Image export failed:", err);
+                alert("Could not generate image. Please try again.");
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', fetchSheetData);
+    </script>
 </body>
 </html>
